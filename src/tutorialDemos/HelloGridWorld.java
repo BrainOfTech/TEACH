@@ -4,7 +4,8 @@ import burlap.domain.singleagent.gridworld.GridWorldVisualizer;
 import burlap.domain.singleagent.gridworld.state.GridAgent;
 import burlap.domain.singleagent.gridworld.state.GridLocation;
 import burlap.domain.singleagent.gridworld.state.GridWorldState;
-import burlap.mdp.core.state.State;
+import burlap.mdp.core.state.MutableState;
+//import burlap.mdp.core.state.State; //changed state to mutablestate
 import burlap.mdp.singleagent.SADomain;
 import burlap.shell.visual.VisualExplorer;
 import burlap.visualizer.Visualizer;
@@ -16,11 +17,11 @@ public class HelloGridWorld {
 
 		GridWorldDomain gw = new GridWorldDomain(11,11); //11x11 grid world
 		gw.setMapToFourRooms(); //four rooms layout
-		gw.setProbSucceedTransitionDynamics(0.8); //stochastic transitions with 0.8 success rate
+		gw.setProbSucceedTransitionDynamics(1); //stochastic transitions with 0.8 success rate
 		SADomain domain = gw.generateDomain(); //generate the grid world domain
 
 		//setup initial state
-		State s = new GridWorldState(new GridAgent(0, 0), new GridLocation(10, 10, "loc0"));
+		MutableState s = new GridWorldState(new GridAgent(10, 10), new GridLocation(10, 10, "loc0"));
 
 		//create visualizer and explorer
 		Visualizer v = GridWorldVisualizer.getVisualizer(gw.getMap());
