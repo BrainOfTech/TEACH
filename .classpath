@@ -17,5 +17,7 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry exported="true" kind="lib" path="lib/amdp.jar"/>
+	<classpathentry kind="lib" path="lib/stable-3-8/weka/weka-src.jar"/>
+	<classpathentry kind="lib" path="lib/stable-3-8/weka/weka.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

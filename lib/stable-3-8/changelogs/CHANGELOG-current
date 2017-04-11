@@ -1,0 +1,189 @@
+------------------------------------------------------------------------
+r13909 | mhall | 2016-12-19 08:57:09 +1300 (Mon, 19 Dec 2016) | 1 line
+Changed paths:
+   M /branches/stable-3-8/weka/src/main/java/weka/experiment/RemoteExperimentSubTask.java
+   M /branches/stable-3-8/weka/src/main/java/weka/experiment/remote.policy
+   M /branches/stable-3-8/weka/src/main/java/weka/experiment/remote.policy.example
+
+RemoteExperimentSubTask now serializes the wrapped Experiment object using SerializedObject. This allows package and third-party library classes to be found when deserialized at the server.
+------------------------------------------------------------------------
+r13922 | mhall | 2016-12-19 11:14:57 +1300 (Mon, 19 Dec 2016) | 1 line
+Changed paths:
+   M /branches/stable-3-8/weka/src/main/java/weka/experiment/remote.policy
+   M /branches/stable-3-8/weka/src/main/java/weka/experiment/remote.policy.example
+
+Additional runtime permissions to allow MLRClassifier to execute on the remote server
+------------------------------------------------------------------------
+r13926 | mhall | 2016-12-19 12:07:48 +1300 (Mon, 19 Dec 2016) | 1 line
+Changed paths:
+   M /branches/stable-3-8/weka/src/main/java/weka/core/version.txt
+   M /branches/stable-3-8/wekadocs/README
+   A /branches/stable-3-8/wekadocs/changelogs/CHANGELOG-3-8-1
+   A /branches/stable-3-8/wekadocs/changelogs/CHANGELOG_PACKAGES-3-8-1
+   M /branches/stable-3-8/wekadocs/manual/manual.tex
+
+README, changlelogs etc. for 3.8.1
+------------------------------------------------------------------------
+r13946 | mhall | 2016-12-19 14:37:27 +1300 (Mon, 19 Dec 2016) | 1 line
+Changed paths:
+   M /branches/stable-3-8/weka/src/main/java/weka/core/version.txt
+
+Updated last release date and version is now 3.8.2-SNAPSHOT
+------------------------------------------------------------------------
+r13956 | mhall | 2017-01-09 22:42:22 +1300 (Mon, 09 Jan 2017) | 1 line
+Changed paths:
+   M /branches/stable-3-8/weka/src/main/java/weka/experiment/ResultMatrix.java
+
+Fixed bug in output of experiment results occurring when number was NaN (or infinite). In that case, no decimal point and 0s should be added. Also, decimal point is no longer printed if user requests 0 decimal places (e.g., if the user requests precision 0).
+------------------------------------------------------------------------
+r13960 | mhall | 2017-01-17 21:06:17 +1300 (Tue, 17 Jan 2017) | 1 line
+Changed paths:
+   M /branches/stable-3-8/weka/src/main/java/weka/filters/supervised/attribute/AddClassification.java
+   M /branches/stable-3-8/weka/src/main/java/weka/filters/unsupervised/attribute/AddCluster.java
+
+Deserializing models was not using SerializationHelper, so was failing for package schemes
+------------------------------------------------------------------------
+r13969 | mhall | 2017-01-18 20:17:27 +1300 (Wed, 18 Jan 2017) | 1 line
+Changed paths:
+   M /branches/stable-3-8/weka/src/main/java/weka/knowledgeflow/StepManager.java
+   M /branches/stable-3-8/weka/src/main/java/weka/knowledgeflow/StepManagerImpl.java
+   M /branches/stable-3-8/weka/src/main/java/weka/knowledgeflow/steps/Block.java
+
+Added an isStepFinished() method to StepManager, which returns true after the step being managed has called finished(). The Block step now uses this method instead of isStepBusy(), which makes it more reliable than it was
+------------------------------------------------------------------------
+r13986 | mhall | 2017-01-24 15:06:32 +1300 (Tue, 24 Jan 2017) | 1 line
+Changed paths:
+   M /branches/stable-3-8/weka/src/main/java/weka/core/SerializationHelper.java
+   M /branches/stable-3-8/weka/src/main/java/weka/core/SerializedObject.java
+   M /branches/stable-3-8/weka/src/main/java/weka/core/WekaPackageLibIsolatingClassLoader.java
+
+WekaPackageLibIsolatingClassLoader now has a method to return a list of the class loaders for the packages that it depends on. Deserialization mechanisms now search all dependencies when looking for third-party classes
+------------------------------------------------------------------------
+r14003 | mhall | 2017-02-07 20:31:00 +1300 (Tue, 07 Feb 2017) | 1 line
+Changed paths:
+   M /branches/stable-3-8/weka/src/main/java/weka/gui/ResultHistoryPanel.java
+   M /branches/stable-3-8/weka/src/main/java/weka/gui/explorer/ClassifierPanel.java
+
+Fixed a bug which made it impossible to view ROC curves, classifier errors etc. when re-evaluating a loaded classifier
+------------------------------------------------------------------------
+r14007 | mhall | 2017-02-09 10:35:45 +1300 (Thu, 09 Feb 2017) | 1 line
+Changed paths:
+   M /branches/stable-3-8/weka/src/main/java/weka/classifiers/bayes/NaiveBayesMultinomialText.java
+
+Fixed a bug in the document normalization process
+------------------------------------------------------------------------
+r14011 | mhall | 2017-02-16 22:06:01 +1300 (Thu, 16 Feb 2017) | 1 line
+Changed paths:
+   M /branches/stable-3-8/weka/src/main/java/weka/core/WekaPackageManager.java
+
+Fixed an npe that would occur in the check for package dependency injection routine if there is an empty package directory. When a package is uninstalled, its top level directory should be removed as well. However, JVM file locks under Windows can prevent this from occurring.
+------------------------------------------------------------------------
+r14027 | mhall | 2017-02-21 19:59:56 +1300 (Tue, 21 Feb 2017) | 1 line
+Changed paths:
+   M /branches/stable-3-8/weka/src/main/java/weka/core/Copyright.props
+
+Updated copyright year
+------------------------------------------------------------------------
+r14036 | eibe | 2017-02-26 12:02:36 +1300 (Sun, 26 Feb 2017) | 3 lines
+Changed paths:
+   M /branches/stable-3-8/weka
+   M /branches/stable-3-8/weka/src/main/java/weka/classifiers/evaluation/output/prediction/AbstractOutput.java
+
+Merged from waikato-3-8
+Outputting predictions for a test set that has the class attribute in a different position now runs through without an exception when the InputMappedClassifier is used from the command-line. Previously, this threw an exception due to an incorrect class index. There is still a problem when the order of the class attribute values changes, but this also affects the Explorer. [from revision 14033]
+Output of predictions with InputMappedClassifier should now also work when the values of the class attribute have changed, e.g., the order. [from revision 14034]
+------------------------------------------------------------------------
+r14042 | mhall | 2017-02-27 09:31:33 +1300 (Mon, 27 Feb 2017) | 1 line
+Changed paths:
+   M /branches/stable-3-8/weka/src/main/java/weka/classifiers/evaluation/Evaluation.java
+   M /branches/stable-3-8/weka/src/main/java/weka/filters/supervised/attribute/AddClassification.java
+   M /branches/stable-3-8/weka/src/main/java/weka/knowledgeflow/steps/PredictionAppender.java
+
+Eibe's fixes relating to predictions made by the InputMappedClassifier
+------------------------------------------------------------------------
+r14046 | mhall | 2017-02-28 09:28:32 +1300 (Tue, 28 Feb 2017) | 1 line
+Changed paths:
+   M /branches/stable-3-8/weka/src/main/java/weka/classifiers/evaluation/output/prediction/AbstractOutput.java
+
+Now works if class attribute is missing in test set and InputMappedClassifier is used. Also, unnecessary instance conversions with the InputMappedClassifier have been eliminated.
+------------------------------------------------------------------------
+r14050 | mhall | 2017-03-04 13:46:03 +1300 (Sat, 04 Mar 2017) | 1 line
+Changed paths:
+   M /branches/stable-3-8/weka/src/main/java/weka/filters/unsupervised/attribute/ReplaceMissingWithUserConstant.java
+
+Fixed a bug in the handling of nominal attributes when the replacement for missing values is already present in the original nominal attribute definition
+------------------------------------------------------------------------
+r14054 | mhall | 2017-03-06 14:52:43 +1300 (Mon, 06 Mar 2017) | 1 line
+Changed paths:
+   M /branches/stable-3-8/weka/src/main/java/weka/filters/unsupervised/attribute/CartesianProduct.java
+
+CartesianProduct now correctly declares that it can deal with missing values. It turns out enableAllAttributes() does not enable treatment of missing values...
+------------------------------------------------------------------------
+r14065 | mhall | 2017-03-06 16:08:54 +1300 (Mon, 06 Mar 2017) | 1 line
+Changed paths:
+   M /branches/stable-3-8/weka/src/main/java/weka/core/WekaPackageLibIsolatingClassLoader.java
+   M /branches/stable-3-8/weka/src/main/java/weka/core/WekaPackageManager.java
+
+Banished some pesky sysout stuff. Can be output if the property weka.core.classloader.debug is set to true
+------------------------------------------------------------------------
+r14069 | mhall | 2017-03-08 11:50:35 +1300 (Wed, 08 Mar 2017) | 1 line
+Changed paths:
+   M /branches/stable-3-8/weka/src/main/java/weka/classifiers/evaluation/output/prediction/AbstractOutput.java
+
+Output of prediction works again if classifier is not InputMappedClassifier. I had forgotten that equalHeaders() also checks that the class indices are the same.
+------------------------------------------------------------------------
+r14074 | mhall | 2017-03-16 11:19:52 +1300 (Thu, 16 Mar 2017) | 1 line
+Changed paths:
+   M /branches/stable-3-8/weka/src/main/java/weka/experiment/Stats.java
+
+Two small Javadoc fixes.
+------------------------------------------------------------------------
+r14080 | mhall | 2017-03-16 16:22:55 +1300 (Thu, 16 Mar 2017) | 1 line
+Changed paths:
+   M /branches/stable-3-8/weka/src/main/java/weka/knowledgeflow/LegacyFlowLoader.java
+
+Fixed a bug that could cause an npe if there has been no log set on the flow loader
+------------------------------------------------------------------------
+r14092 | mhall | 2017-03-22 09:19:02 +1300 (Wed, 22 Mar 2017) | 1 line
+Changed paths:
+   M /branches/stable-3-8/weka/src/main/java/weka/gui/knowledgeflow/MainKFPerspective.java
+   M /branches/stable-3-8/weka/src/main/java/weka/gui/knowledgeflow/VisibleLayout.java
+
+Save dialog for flows now only allows .kf file format (.kfml didn't work anyway :-))
+------------------------------------------------------------------------
+r14097 | mhall | 2017-03-22 11:31:09 +1300 (Wed, 22 Mar 2017) | 1 line
+Changed paths:
+   M /branches/stable-3-8/weka/src/main/java/weka/gui/GUIChooserApp.java
+
+Old extension mechanism for the GUIChooser was not loading/instantiating plugin extensions via WekaPackageClassLoaderManager - fixed.
+------------------------------------------------------------------------
+r14111 | mhall | 2017-03-24 15:25:32 +1300 (Fri, 24 Mar 2017) | 1 line
+Changed paths:
+   M /branches/stable-3-8/weka/src/main/java/weka/core/WekaPackageManager.java
+
+Removed an unnecessary System.exit() call from the main method of WekaPackageManager
+------------------------------------------------------------------------
+r14116 | mhall | 2017-03-28 12:11:29 +1300 (Tue, 28 Mar 2017) | 1 line
+Changed paths:
+   M /branches/stable-3-8/weka/src/main/java/weka/core/converters/CSVLoader.java
+
+getOptions now always includes the -format option, and not only in the case where a date attribute range has been specified
+------------------------------------------------------------------------
+r14121 | mhall | 2017-03-28 16:47:41 +1300 (Tue, 28 Mar 2017) | 1 line
+Changed paths:
+   M /branches/stable-3-8/weka/src/main/java/weka/core/WekaPackageManager.java
+
+Listing available packages from the command line now takes the base Weka version into account
+------------------------------------------------------------------------
+r14132 | mhall | 2017-04-07 11:46:01 +1200 (Fri, 07 Apr 2017) | 1 line
+Changed paths:
+   M /branches/stable-3-8/weka/src/main/java/weka/clusterers/FilteredClusterer.java
+
+FilteredClusterer now implements Drawable.
+------------------------------------------------------------------------
+r14137 | mhall | 2017-04-07 11:49:19 +1200 (Fri, 07 Apr 2017) | 1 line
+Changed paths:
+   M /branches/stable-3-8/weka/src/main/java/weka/clusterers/ClusterEvaluation.java
+
+Graph output is now produced when classes to clusters evaluation is performed
+------------------------------------------------------------------------
