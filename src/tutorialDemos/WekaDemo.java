@@ -1,3 +1,4 @@
+package tutorialDemos;
 import weka.core.Instances;
 import weka.clusterers.DensityBasedClusterer;
 import weka.clusterers.EM;
