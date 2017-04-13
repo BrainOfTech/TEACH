@@ -1,4 +1,5 @@
 package tutorialDemos;
+
 import weka.core.Instances;
 import weka.clusterers.DensityBasedClusterer;
 import weka.clusterers.EM;
@@ -10,60 +11,58 @@ import java.io.FileReader;
 /**
  * An example class that shows the use of Weka clusterers from Java.
  *
- * @author  FracPete
+ * @author FracPete
  */
 
 public class WekaDemo {
-  /**
-   * Run clusterers
-   *
-   * @param filename      the name of the ARFF file to run on
-   */
-  public WekaDemo(String filename) throws Exception {
-    ClusterEvaluation eval;
-    Instances               data;
-    String[]                options;
-    DensityBasedClusterer   cl;    
+	/**
+	 * Run clusterers
+	 *
+	 * @param filename
+	 *            the name of the ARFF file to run on
+	 */
+	public WekaDemo(String filename) throws Exception {
+		ClusterEvaluation eval;
+		Instances data;
+		String[] options;
+		DensityBasedClusterer cl;
 
-    data = new Instances(new BufferedReader(new FileReader(filename)));
-    
-    // normal
-    System.out.println("\n--> normal");
-    options    = new String[2];
-    options[0] = "-t";
-    options[1] = filename;
-    System.out.println(
-        ClusterEvaluation.evaluateClusterer(new EM(), options));
-    
-    // manual call
-    System.out.println("\n--> manual");
-    cl   = new EM();
-    cl.buildClusterer(data);
-    eval = new ClusterEvaluation();
-    eval.setClusterer(cl);
-    eval.evaluateClusterer(new Instances(data));
-    System.out.println("# of clusters: " + eval.getNumClusters());
+		data = new Instances(new BufferedReader(new FileReader(filename)));
 
-    // density based
-    System.out.println("\n--> density (CV)");
-    cl   = new EM();
-    eval = new ClusterEvaluation();
-    eval.setClusterer(cl);
-    eval.crossValidateModel(
-           cl, data, 10, data.getRandomNumberGenerator(1));
-    System.out.println("# of clusters: " + eval.getNumClusters());
-  }
+		// normal
+		System.out.println("\n--> normal");
+		options = new String[2];
+		options[0] = "-t";
+		options[1] = filename;
+		System.out.println(ClusterEvaluation.evaluateClusterer(new EM(), options));
 
-  /**
-   * usage:
-   *   ClusteringDemo arff-file
-   */
-  public static void main(String[] args) throws Exception {
-    if (args.length != 1) {
-      System.out.println("usage: " + WekaDemo.class.getName() + " <arff-file>");
-      System.exit(1);
-    }
+		// manual call
+		System.out.println("\n--> manual");
+		cl = new EM();
+		cl.buildClusterer(data);
+		eval = new ClusterEvaluation();
+		eval.setClusterer(cl);
+		eval.evaluateClusterer(new Instances(data));
+		System.out.println("# of clusters: " + eval.getNumClusters());
 
-    new WekaDemo(args[0]);
-  }
+		// density based
+		System.out.println("\n--> density (CV)");
+		cl = new EM();
+		eval = new ClusterEvaluation();
+		eval.setClusterer(cl);
+		eval.crossValidateModel(cl, data, 10, data.getRandomNumberGenerator(1));
+		System.out.println("# of clusters: " + eval.getNumClusters());
+	}
+
+	/**
+	 * usage: ClusteringDemo arff-file
+	 */
+	public static void main(String[] args) throws Exception {
+		if (args.length != 1) {
+			System.out.println("usage: " + WekaDemo.class.getName() + " <arff-file>");
+			System.exit(1);
+		}
+
+		new WekaDemo(args[0]);
+	}
 }
