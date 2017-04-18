@@ -8,8 +8,7 @@ import burlap.behavior.singleagent.Episode;
 import burlap.mdp.core.action.Action;
 import burlap.mdp.core.state.State;
 import weka.classifiers.Classifier;
-import weka.classifiers.bayes.NaiveBayes;
-import weka.classifiers.functions.GaussianProcesses;//TODO: Figure out missing Matrix class def.
+import weka.classifiers.functions.SimpleLogistic;
 import weka.core.Attribute;
 import weka.core.DenseInstance;
 import weka.core.Instance;
@@ -91,7 +90,7 @@ public class TestsDriver {
 		System.out.println(isTrainingSet.numInstances());
 		
 		// TODO: Train Classifier
-		Classifier stateIdentifier = (Classifier) new NaiveBayes();//TODO: More sophisticated classifier.
+		Classifier stateIdentifier = (Classifier) new SimpleLogistic();//TODO: Gaussian Process.
 		try {
 			stateIdentifier.buildClassifier(isTrainingSet);
 		} catch (Exception e) {
@@ -99,8 +98,28 @@ public class TestsDriver {
 			e.printStackTrace();
 		}
 		
-		System.out.println("Handled.");
-
+		System.out.println("Trained Classifier.");
+		
+		//Test:
+		Instance testInference = new DenseInstance(attributes.size());
+		testInference.setValue((Attribute) attributes.get(0), 6);
+		testInference.setValue((Attribute) attributes.get(1), 6);
+		testInference.setDataset(isTrainingSet);//Re-use data-set format.
+		// Get the likelihood of each classes
+		// fDistribution[0] is the probability of being “positive”
+		// fDistribution[1] is the probability of being “negative”
+		double[] fDistribution = {};
+		try {
+			fDistribution = stateIdentifier.distributionForInstance(testInference);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.out.println("Test Inference:");
+		for(int i = 0; i< fDistribution.length; i++){
+			System.out.println(fDistribution[i]);
+		}
+		
 		return stateIdentifier;
 	}
 
