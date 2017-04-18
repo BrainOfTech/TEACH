@@ -23,23 +23,7 @@ public class TestsDriver {
 
 		Trajectory[] Traj_array = generateTrajectories(file_directory);
 		System.out.println("Execution complete. Num traj's: " + Traj_array.length);
-
-		Classifier class1 = trainClassifierFromLabelsOnly(Traj_array, 1);// 1 is the upper right room
-
-		// TODO
-	}
-
-	// TODO: Train based on existing classifiers + labels
-	public static Classifier trainClassifierFromLabelsOnly(Trajectory[] trajectories, int labelOfInterest) {
-		// Train a classifier for inA/notInA
-
-		// State first = trajectories[0].getStateSequence().get(0);
-		// System.out.println(first.variableKeys());
-		// for(int i = 0; i < first.variableKeys().size(); i++){
-		// System.out.println(first.variableKeys().get(i));
-		// System.out.println(first.get(first.variableKeys().get(i)));
-		// }
-
+		
 		Attribute agentX = new Attribute("agent:x");
 		Attribute agentY = new Attribute("agent:y");
 		ArrayList<String> classLabel = new ArrayList<String>(2);
@@ -50,11 +34,67 @@ public class TestsDriver {
 		attributes.add(agentX);
 		attributes.add(agentY);
 		attributes.add(classAttribute);
-
+		
+		Instances training1 = trainingForLabel(Traj_array, 1, attributes);
+		Classifier class1 = trainClassifierFromLabelsOnly(training1, attributes);// 1 is the upper right room
+		Instances training2 = trainingForLabel(Traj_array, 2, attributes);
+		Classifier class2 = trainClassifierFromLabelsOnly(training2, attributes);
+		Instances training3 = trainingForLabel(Traj_array, 3, attributes);
+		Classifier class3 = trainClassifierFromLabelsOnly(training3, attributes);
+		Instances training4 = trainingForLabel(Traj_array, 4, attributes);
+		Classifier class4 = trainClassifierFromLabelsOnly(training4, attributes);
+		
+		// Test:
+		for(int y = 0; y<=10; y++){
+			for(int x = 0; x <= 10; x++){
+				Instance testInference = new DenseInstance(attributes.size());
+				testInference.setValue((Attribute) attributes.get(0), x);
+				testInference.setValue((Attribute) attributes.get(1), y);
+				testInference.setDataset(training1);// Re-use data-set format.
+				// Get the likelihood of each classes
+				// fDistribution[0] is the probability of being “positive”
+				// fDistribution[1] is the probability of being “negative”
+				double[] fDistribution = {0,0,0,0};
+				try {
+					fDistribution[0] = class1.distributionForInstance(testInference)[0];
+					fDistribution[1] = class2.distributionForInstance(testInference)[0];
+					fDistribution[2] = class3.distributionForInstance(testInference)[0];
+					fDistribution[3] = class4.distributionForInstance(testInference)[0];
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				System.out.print(argmax(fDistribution) + 1 + " ");
+//				for(int i = 0; i < fDistribution.length; i++){
+//					System.out.print(fDistribution[i] + " ");
+//				}
+//				System.out.println("");
+			}
+			System.out.println("");
+		}
+		
+	}//End Main
+	
+	public static int argmax(double[] elems) {
+		int bestIdx = -1;
+		double max = Double.NEGATIVE_INFINITY;
+		for (int i = 0; i < elems.length; i++) {
+			double elem = elems[i];
+			if (elem > max) {
+				max = elem;
+				bestIdx = i;
+			}
+		}
+		return bestIdx;
+	}
+	
+	//Create Training Set for given label from trajectories
+	public static Instances trainingForLabel(Trajectory[] trajectories, int labelOfInterest, ArrayList<Attribute> attributes) {
 		// Create an empty training set
 		Instances isTrainingSet = new Instances("Rel", attributes, trajectories.length * 2);
 		// Set class index
-		isTrainingSet.setClassIndex(attributes.size() - 1);// The final attribute
+		isTrainingSet.setClassIndex(attributes.size() - 1);// The final
+															// attribute
 
 		// Pull out agent:x, agent:y locations for states labeled
 		// labelOfInterest
@@ -62,8 +102,8 @@ public class TestsDriver {
 			// Create the start instance
 			State inst = trajectories[i].getStateSequence().get(0);
 			Instance iExample = new DenseInstance(attributes.size());
-			iExample.setValue((Attribute) attributes.get(0), (Integer)inst.get("agent:x"));
-			iExample.setValue((Attribute) attributes.get(1), (Integer)inst.get("agent:y"));
+			iExample.setValue((Attribute) attributes.get(0), (Integer) inst.get("agent:x"));
+			iExample.setValue((Attribute) attributes.get(1), (Integer) inst.get("agent:y"));
 			if (trajectories[i].start == labelOfInterest) {
 				iExample.setValue((Attribute) attributes.get(2), "positive");
 			} else {
@@ -71,7 +111,7 @@ public class TestsDriver {
 			}
 			// add the instance
 			isTrainingSet.add(iExample);
-			
+
 			// Create the other instance
 			int stateSequenceSize = trajectories[i].getStateSequence().size();
 			inst = trajectories[i].getStateSequence().get(stateSequenceSize - 1);
@@ -86,8 +126,14 @@ public class TestsDriver {
 			// add the instance
 			isTrainingSet.add(iExample);
 		}
-		
+
 		System.out.println(isTrainingSet.numInstances());
+		
+		return isTrainingSet;
+	}
+
+	// TODO: Train based on existing classifiers + labels
+	public static Classifier trainClassifierFromLabelsOnly(Instances isTrainingSet, ArrayList<Attribute> attributes) {
 		
 		// TODO: Train Classifier
 		Classifier stateIdentifier = (Classifier) new SimpleLogistic();//TODO: Gaussian Process.
@@ -99,26 +145,6 @@ public class TestsDriver {
 		}
 		
 		System.out.println("Trained Classifier.");
-		
-		//Test:
-		Instance testInference = new DenseInstance(attributes.size());
-		testInference.setValue((Attribute) attributes.get(0), 6);
-		testInference.setValue((Attribute) attributes.get(1), 6);
-		testInference.setDataset(isTrainingSet);//Re-use data-set format.
-		// Get the likelihood of each classes
-		// fDistribution[0] is the probability of being “positive”
-		// fDistribution[1] is the probability of being “negative”
-		double[] fDistribution = {};
-		try {
-			fDistribution = stateIdentifier.distributionForInstance(testInference);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		System.out.println("Test Inference:");
-		for(int i = 0; i< fDistribution.length; i++){
-			System.out.println(fDistribution[i]);
-		}
 		
 		return stateIdentifier;
 	}
