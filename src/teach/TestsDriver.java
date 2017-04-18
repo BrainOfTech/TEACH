@@ -24,6 +24,7 @@ public class TestsDriver {
 		Trajectory[] Traj_array = generateTrajectories(file_directory);
 		System.out.println("Execution complete. Num traj's: " + Traj_array.length);
 		
+		//Create Attributes Vector for Training.
 		Attribute agentX = new Attribute("agent:x");
 		Attribute agentY = new Attribute("agent:y");
 		ArrayList<String> classLabel = new ArrayList<String>(2);
@@ -35,6 +36,7 @@ public class TestsDriver {
 		attributes.add(agentY);
 		attributes.add(classAttribute);
 		
+		//Defining Training Sets and Classifiers
 		Instances training1 = trainingForLabel(Traj_array, 1, attributes);
 		Classifier class1 = trainClassifierFromLabelsOnly(training1, attributes);// 1 is the upper right room
 		Instances training2 = trainingForLabel(Traj_array, 2, attributes);
@@ -75,19 +77,6 @@ public class TestsDriver {
 		
 	}//End Main
 	
-	public static int argmax(double[] elems) {
-		int bestIdx = -1;
-		double max = Double.NEGATIVE_INFINITY;
-		for (int i = 0; i < elems.length; i++) {
-			double elem = elems[i];
-			if (elem > max) {
-				max = elem;
-				bestIdx = i;
-			}
-		}
-		return bestIdx;
-	}
-	
 	//Create Training Set for given label from trajectories
 	public static Instances trainingForLabel(Trajectory[] trajectories, int labelOfInterest, ArrayList<Attribute> attributes) {
 		// Create an empty training set
@@ -101,9 +90,10 @@ public class TestsDriver {
 		for (int i = 0; i < trajectories.length; i++) {
 			// Create the start instance
 			State inst = trajectories[i].getStateSequence().get(0);
+			int[] xy = getStateXY(inst);
 			Instance iExample = new DenseInstance(attributes.size());
-			iExample.setValue((Attribute) attributes.get(0), (Integer) inst.get("agent:x"));
-			iExample.setValue((Attribute) attributes.get(1), (Integer) inst.get("agent:y"));
+			iExample.setValue((Attribute) attributes.get(0), xy[0]);
+			iExample.setValue((Attribute) attributes.get(1), xy[1]);
 			if (trajectories[i].start == labelOfInterest) {
 				iExample.setValue((Attribute) attributes.get(2), "positive");
 			} else {
@@ -115,9 +105,10 @@ public class TestsDriver {
 			// Create the other instance
 			int stateSequenceSize = trajectories[i].getStateSequence().size();
 			inst = trajectories[i].getStateSequence().get(stateSequenceSize - 1);
+			xy = getStateXY(inst);
 			iExample = new DenseInstance(attributes.size());
-			iExample.setValue((Attribute) attributes.get(0), (Integer) inst.get("agent:x"));
-			iExample.setValue((Attribute) attributes.get(1), (Integer) inst.get("agent:y"));
+			iExample.setValue((Attribute) attributes.get(0), xy[0]);
+			iExample.setValue((Attribute) attributes.get(1), xy[1]);
 			if (trajectories[i].end == labelOfInterest) {
 				iExample.setValue((Attribute) attributes.get(2), "positive");
 			} else {
@@ -148,9 +139,18 @@ public class TestsDriver {
 		
 		return stateIdentifier;
 	}
-
-	public static boolean testTrajectories() {
-		return false;// TODO: Replace with actual tests
+	
+	public static int argmax(double[] elems) {
+		int bestIdx = -1;
+		double max = Double.NEGATIVE_INFINITY;
+		for (int i = 0; i < elems.length; i++) {
+			double elem = elems[i];
+			if (elem > max) {
+				max = elem;
+				bestIdx = i;
+			}
+		}
+		return bestIdx;
 	}
 
 	// This method doesn't serve any purpose other than documentation
