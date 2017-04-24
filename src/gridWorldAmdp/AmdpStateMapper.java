@@ -1,10 +1,9 @@
 package gridWorldAmdp;
 
-import burlap.domain.singleagent.gridworld.state.GridAgent;
 import burlap.mdp.auxiliary.StateMapping;
-import burlap.mdp.core.oo.state.OOState;
 import burlap.mdp.core.oo.state.ObjectInstance;
 import burlap.mdp.core.state.State;
+import gridWorldL0.AmdpL0Agent;
 import gridWorldL0.AmdpL0Domain;
 import gridWorldL0.AmdpL0State;
 import gridWorldL1.AmdpL1Agent;
@@ -21,15 +20,14 @@ public class AmdpStateMapper implements StateMapping{
 
     public State mapState(State sIn) {
 
-    	OOState Generic_state = (OOState)sIn;
-    	AmdpL0State L0_state = (AmdpL0State)Generic_state;
+    	AmdpL0State L0_state = (AmdpL0State)sIn;
     	
-        GridAgent L0_agent = L0_state.agent;
+    	AmdpL0Agent L0_agent = L0_state.agent;
         int ax = L0_agent.x;
         int ay = L0_agent.y;
         
         //Get room name
-        ObjectInstance inRoom = AmdpL0Domain.currentRoom(Generic_state, ax, ay, "CLASS_COORDINATE_RECTANGLE");
+        ObjectInstance inRoom = AmdpL0Domain.currentRoom(sIn, ax, ay, "rooms");
         String roomName = inRoom.name();
         
         //Construct L1 rooms object

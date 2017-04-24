@@ -4,26 +4,39 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import burlap.domain.singleagent.gridworld.state.GridAgent;
 import burlap.domain.singleagent.gridworld.state.GridLocation;
-import burlap.domain.singleagent.gridworld.state.GridWorldState;
+import burlap.mdp.core.oo.state.MutableOOState;
+import burlap.mdp.core.oo.state.OOStateUtilities;
+import burlap.mdp.core.oo.state.OOVariableKey;
 import burlap.mdp.core.oo.state.ObjectInstance;
+import burlap.mdp.core.state.MutableState;
+import burlap.mdp.core.state.State;
 
-public class AmdpL0State extends GridWorldState {
-	
-    public List<AmdpL0Room> rooms = new ArrayList<AmdpL0Room>();
-    
-    public AmdpL0State(GridAgent agent, List<AmdpL0Room> rooms, List<GridLocation> locations) {
-        super.agent = agent;
-        this.rooms = rooms;
+/**
+ * @author James MacGlashan.
+ */
+public class AmdpL0State implements MutableOOState {
+
+	public AmdpL0Agent agent;
+	public List<GridLocation> locations = new ArrayList<GridLocation>();
+	public List<AmdpL0Room> rooms = new ArrayList<AmdpL0Room>();
+
+	public AmdpL0State(AmdpL0Agent agent,  List<AmdpL0Room> rooms, List<GridLocation> locations){
+		this.agent = agent;
+		this.rooms = rooms;
         if(locations.size() == 0){
-			super.locations = new ArrayList<GridLocation>();
+			this.locations = new ArrayList<GridLocation>();
 		}
 		else {
-			super.locations = locations;
+			this.locations = locations;
 		}
-    }
-    
+	}
+
+	@Override
+	public int numObjects() {
+		return 1 + this.locations.size() + this.rooms.size();
+	}
+
     @Override
     //returns a single object given a Object label e.g. "room1"
 	public ObjectInstance object(String oname) {
@@ -40,17 +53,14 @@ public class AmdpL0State extends GridWorldState {
 		}
 		return null;
 	}
-    
-   //compares object give a specific field ^name
-	protected int roomInd(String oname){
-		int ind = -1;
-		for(int i = 0; i < rooms.size(); i++){
-			if(rooms.get(i).name().equals(oname)){
-				ind = i;
-				break;
-			}
-		}
-		return ind;
+
+	@Override
+	public List<ObjectInstance> objects() {
+		List<ObjectInstance> obs = new ArrayList<ObjectInstance>(1+locations.size());
+		obs.add(agent);
+		obs.addAll(locations);
+		obs.addAll(rooms);
+		return obs;
 	}
 	
 	@Override
@@ -67,5 +77,90 @@ public class AmdpL0State extends GridWorldState {
             return new ArrayList<ObjectInstance>(rooms);
         }
         throw new RuntimeException("Unknown class type " + oclass);
-    }
+	}
+
+	@Override
+	public List<Object> variableKeys() {
+		return OOStateUtilities.flatStateKeys(this);
+	}
+
+	@Override
+	public Object get(Object variableKey) {
+		OOVariableKey key = OOStateUtilities.generateKey(variableKey);
+		if(key.obName.equals(agent.name())){
+			return agent.get(key.obVarKey);
+		}
+		int ind = this.locationInd(key.obName);
+		if(ind == -1){
+			throw new RuntimeException("Cannot find object " + key.obName);
+		}
+		return locations.get(ind).get(key.obVarKey);
+	}
+
+	@Override
+	public State copy() {
+		return new AmdpL0State(agent, rooms, locations);
+	}
+
+	protected int locationInd(String oname){
+		int ind = -1;
+		for(int i = 0; i < locations.size(); i++){
+			if(locations.get(i).name().equals(oname)){
+				ind = i;
+				break;
+			}
+		}
+		return ind;
+	}
+
+//	@Override
+//	public String toString() {
+//		return getClass().getName() + "@" + Integer.toHexString(hashCode());
+//	}
+
+	public AmdpL0Agent touchAgent(){
+		AmdpL0Agent agent = new AmdpL0Agent();
+		agent = this.agent;
+		return agent;
+	}
+	
+   //compares object give a specific field ^name
+	protected int roomInd(String oname){
+		int ind = -1;
+		for(int i = 0; i < rooms.size(); i++){
+			if(rooms.get(i).name().equals(oname)){
+				ind = i;
+				break;
+			}
+		}
+		return ind;
+	}
+	
+	@Override
+	public MutableState set(Object variableKey, Object value) {
+		throw new RuntimeException("Should not execute");
+	}
+	@Override
+	public MutableOOState addObject(ObjectInstance o) {
+		throw new RuntimeException("Should not execute");
+	}
+
+	@Override
+	public MutableOOState removeObject(String oname) {
+		throw new RuntimeException("Should not execute");
+	}
+
+	@Override
+	public MutableOOState renameObject(String objectName, String newName) {
+		throw new RuntimeException("Should not execute");
+	}
 }
+    
+
+    
+
+	
+
+    
+
+

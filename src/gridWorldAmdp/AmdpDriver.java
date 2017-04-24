@@ -6,8 +6,6 @@ import amdp.amdpframework.GroundedPropSC;
 import amdp.amdpframework.GroundedTask;
 import amdp.amdpframework.NonPrimitiveTaskNode;
 import amdp.amdpframework.TaskNode;
-import amdp.cleanupamdpdomains.cleanupamdp.L0TaskNode;
-import amdp.cleanupamdpdomains.cleanupamdp.L1TaskNode;
 import amdp.cleanupamdpdomains.cleanupamdp.RootTaskNode;
 import amdp.taxiamdpdomains.testingtools.BoundedRTDPForTests;
 import amdp.taxiamdpdomains.testingtools.GreedyReplan;
@@ -18,11 +16,9 @@ import burlap.behavior.singleagent.auxiliary.EpisodeSequenceVisualizer;
 import burlap.behavior.valuefunction.ConstantValueFunction;
 import burlap.behavior.valuefunction.QProvider;
 import burlap.behavior.valuefunction.ValueFunction;
-import burlap.domain.singleagent.gridworld.GridWorldDomain;
+import burlap.debugtools.DPrint;
 import burlap.domain.singleagent.gridworld.GridWorldVisualizer;
-import burlap.domain.singleagent.gridworld.state.GridAgent;
 import burlap.domain.singleagent.gridworld.state.GridLocation;
-import burlap.domain.singleagent.gridworld.state.GridWorldState;
 import burlap.mdp.auxiliary.StateMapping;
 import burlap.mdp.auxiliary.common.GoalConditionTF;
 import burlap.mdp.core.action.ActionType;
@@ -30,12 +26,14 @@ import burlap.mdp.core.oo.propositional.GroundedProp;
 import burlap.mdp.core.oo.propositional.PropositionalFunction;
 import burlap.mdp.core.state.State;
 import burlap.mdp.singleagent.common.GoalBasedRF;
+import burlap.mdp.singleagent.environment.SimulatedEnvironment;
 import burlap.mdp.singleagent.model.FactoredModel;
 import burlap.mdp.singleagent.model.RewardFunction;
 import burlap.mdp.singleagent.oo.OOSADomain;
 import burlap.shell.visual.VisualExplorer;
 import burlap.statehashing.simple.SimpleHashableStateFactory;
 import burlap.visualizer.Visualizer;
+import gridWorldL0.AmdpL0Agent;
 import gridWorldL0.AmdpL0Domain;
 import gridWorldL0.AmdpL0Room;
 import gridWorldL0.AmdpL0State;
@@ -63,10 +61,10 @@ public class AmdpDriver {
     static int maxTrajectoryLength = 1000;
 
     public static List<BoundedRTDPForTests> brtdpList= new ArrayList<BoundedRTDPForTests>();
-
     public static Map<String, BoundedRTDPForTests> brtdpMap =  new HashMap<String, BoundedRTDPForTests>();
 
 	public static void main(String[] args) {
+		DPrint.toggleCode(3214986, true);
 		
 		//Create Identifiers
 		String agent_name = "agent";
@@ -94,23 +92,14 @@ public class AmdpDriver {
 	    
 		//Create Domains
 		//L0
-		AmdpL0Domain gw = new AmdpL0Domain(11, 11); // 11x11 grid world
-		gw.setMapToFourRooms(); // four rooms layout
-		gw.setRf(L0rf);
-		gw.setTf(L0tf);
-		
+		AmdpL0Domain gw = new AmdpL0Domain(L0rf, L0tf); 
+		gw.setMapToFourRooms(); // four rooms layout, 11x11 grid world (essential)
 		OOSADomain domainL0 = gw.generateDomain(); // generate the grid world domain
-		domainL0.addPropFunction(pfL0); //IMPORTANT
-		domainL0.addStateClass(CLASS_COORDINATE_RECTANGLE, AmdpL0Room.class); //Not sure what this does...
 		
 		//L1
-		AmdpL1Domain rw = new AmdpL1Domain(domainL0, L1rf, L1tf);
-		
+		AmdpL1Domain rw = new AmdpL1Domain(L1rf, L1tf);
 		OOSADomain domainL1 = rw.generateDomain();
-		domainL1.addPropFunction(pfL1);
-		domainL1.addStateClass(CLASS_ROOM, AmdpL1Room.class);
-		
-		
+
 		//Create States
 		//L0: room object (room assignment numbered top-left proceeding counterclockwise) 
 		AmdpL0Room r1L0 = new AmdpL0Room("room1", 10, 6, 5, 10, 5, 8);
@@ -121,12 +110,11 @@ public class AmdpDriver {
 		List<GridLocation> locations = make_color_map(r1L0, "goal-location"); //unusable location doubles as color map
 		
 		//L0 State-->Starting location(GridAgent), Rooms(AmdpL0Room), Ending Location(GridLocation)
-		AmdpL0State L0_state = new AmdpL0State(new GridAgent(start_location[0],start_location[1], agent_name), L0_rooms, locations);
+		AmdpL0State L0_state = new AmdpL0State(new AmdpL0Agent(start_location[0],start_location[1], agent_name), L0_rooms, locations);
 		
 		//L1 State-->is dynamically set by AmdpL1StateMapper
 		State L1_state = new AmdpStateMapper().mapState(L0_state);
 			
-		
 		//Create Action Types
         ActionType north = domainL0.getAction(AmdpL0Domain.ACTION_NORTH);
         ActionType east = domainL0.getAction(AmdpL0Domain.ACTION_EAST);
@@ -150,7 +138,8 @@ public class AmdpDriver {
         pgList.add(1,new l1PolicyGenerator(domainL1));
 		
         AMDPAgent agent = new AMDPAgent(L1Root.getApplicableGroundedTasks(L1_state).get(0),pgList);
-        GridWorldEnv env = new GridWorldEnv(gw.generateDomain(), L0_state);
+        SimulatedEnvironment env = new SimulatedEnvironment(gw.generateDomain(), L0_state);
+//        GridWorldEnv env = new GridWorldEnv(gw.generateDomain(), L0_state);
         
        
         //Timing and performance data
@@ -221,7 +210,7 @@ public class AmdpDriver {
                     new ConstantValueFunction(0.), new ConstantValueFunction(1.), 0.01, -1);
             brtd.setRemainingNumberOfBellmanUpdates(bellmanBudgetL0);
             brtd.setMaxRolloutDepth(200);
-            brtd.toggleDebugPrinting(false);
+            brtd.toggleDebugPrinting(true);
             brtdpList.add(brtd);
             brtd.planFromState(s);
             return new GreedyReplan(brtd);
@@ -242,7 +231,7 @@ public class AmdpDriver {
                     new ConstantValueFunction(1.), 0.01, -1);
             brtd.setRemainingNumberOfBellmanUpdates(bellmanBudgetL0);
             brtd.setMaxRolloutDepth(200);
-            brtd.toggleDebugPrinting(false);
+            brtd.toggleDebugPrinting(true);
             brtdpList.add(brtd);
             brtd.planFromState(s);
             return brtd;
@@ -275,9 +264,9 @@ public class AmdpDriver {
 
             brtdp.setRemainingNumberOfBellmanUpdates(bellmanBudgetL1);
             brtdp.setMaxRolloutDepth(500);
-            brtdp.toggleDebugPrinting(false);
+            brtdp.toggleDebugPrinting(true);
 
-            Policy p = brtdp.planFromState(s);
+         //   Policy p = brtdp.planFromState(s);
             brtdpList.add(brtdp);
             return new GreedyReplan(brtdp);
         }
@@ -302,9 +291,9 @@ public class AmdpDriver {
 
             brtdp.setRemainingNumberOfBellmanUpdates(bellmanBudgetL1);
             brtdp.setMaxRolloutDepth(500);
-            brtdp.toggleDebugPrinting(false);
+            brtdp.toggleDebugPrinting(true);
 
-            Policy p = brtdp.planFromState(s);
+           // Policy p = brtdp.planFromState(s);
             brtdpList.add(brtdp);
             return brtdp;
         }

@@ -12,7 +12,6 @@ import java.util.List;
 
 @DeepCopyState
 public class AmdpL1Agent implements ObjectInstance {
-
     public String name;
     public String inRoom;
 
