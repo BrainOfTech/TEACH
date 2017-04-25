@@ -1,15 +1,5 @@
 package gridWorldAmdp;
 
-import amdp.amdpframework.AMDPAgent;
-import amdp.amdpframework.AMDPPolicyGenerator;
-import amdp.amdpframework.GroundedPropSC;
-import amdp.amdpframework.GroundedTask;
-import amdp.amdpframework.NonPrimitiveTaskNode;
-import amdp.amdpframework.TaskNode;
-import amdp.cleanupamdpdomains.cleanupamdp.RootTaskNode;
-import amdp.taxiamdpdomains.testingtools.BoundedRTDPForTests;
-import amdp.taxiamdpdomains.testingtools.GreedyReplan;
-import amdp.taxiamdpdomains.testingtools.MutableGlobalInteger;
 import burlap.behavior.policy.Policy;
 import burlap.behavior.singleagent.Episode;
 import burlap.behavior.singleagent.auxiliary.EpisodeSequenceVisualizer;
@@ -24,6 +14,7 @@ import burlap.mdp.auxiliary.common.GoalConditionTF;
 import burlap.mdp.core.action.ActionType;
 import burlap.mdp.core.oo.propositional.GroundedProp;
 import burlap.mdp.core.oo.propositional.PropositionalFunction;
+import burlap.mdp.core.oo.state.ObjectInstance;
 import burlap.mdp.core.state.State;
 import burlap.mdp.singleagent.common.GoalBasedRF;
 import burlap.mdp.singleagent.environment.SimulatedEnvironment;
@@ -33,6 +24,16 @@ import burlap.mdp.singleagent.oo.OOSADomain;
 import burlap.shell.visual.VisualExplorer;
 import burlap.statehashing.simple.SimpleHashableStateFactory;
 import burlap.visualizer.Visualizer;
+import gridAmdpFramework.AMDPAgent;
+import gridAmdpFramework.AMDPPolicyGenerator;
+import gridAmdpFramework.GroundedPropSC;
+import gridAmdpFramework.GroundedTask;
+import gridAmdpFramework.NonPrimitiveTaskNode;
+import gridAmdpFramework.RootTaskNode;
+import gridAmdpFramework.TaskNode;
+import gridAmdpTestingTools.BoundedRTDPForTests;
+import gridAmdpTestingTools.GreedyReplan;
+import gridAmdpTestingTools.MutableGlobalInteger;
 import gridWorldL0.AmdpL0Agent;
 import gridWorldL0.AmdpL0Domain;
 import gridWorldL0.AmdpL0Room;
@@ -49,6 +50,14 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import amdp.cleanup.CleanupDomain;
+import amdp.cleanup.PullCostGoalRF;
+import amdp.cleanup.state.CleanupAgent;
+import amdp.cleanup.state.CleanupDoor;
+import amdp.cleanup.state.CleanupState;
+import amdp.cleanupamdpdomains.cleanupamdp.CleanupDriver.AgentToRegionHeuristic;
+import amdp.cleanupamdpdomains.cleanupamdp.CleanupDriver.BlockToRegionHeuristic;
 
 public class AmdpDriver {
     static protected MutableGlobalInteger bellmanBudget = new MutableGlobalInteger(-1);
@@ -107,7 +116,10 @@ public class AmdpDriver {
 		AmdpL0Room r3L0 = new AmdpL0Room("room3", 4, 0, 0, 4, 5, 1);
 		AmdpL0Room r4L0 = new AmdpL0Room("room4", 3, 6, 0, 10, 8, 4);
 		List<AmdpL0Room> L0_rooms = new ArrayList<AmdpL0Room>(Arrays.asList(r1L0, r2L0, r3L0, r4L0));
-		List<GridLocation> locations = make_color_map(r1L0, "goal-location"); //unusable location doubles as color map
+		List<GridLocation> locations = new ArrayList<GridLocation>(); 
+		//locations = make_color_map(r1L0, "goal-location"); //unusable location doubles as color map
+		locations.add(new GridLocation(0,0,"goal"));
+		locations.add(new GridLocation(10,10, "goal")); //weird bug will break program if < 2 locations...
 		
 		//L0 State-->Starting location(GridAgent), Rooms(AmdpL0Room), Ending Location(GridLocation)
 		AmdpL0State L0_state = new AmdpL0State(new AmdpL0Agent(start_location[0],start_location[1], agent_name), L0_rooms, locations);
@@ -128,9 +140,9 @@ public class AmdpDriver {
         TaskNode et = new L0TaskNode(east);
         TaskNode st = new L0TaskNode(south);
         TaskNode wt = new L0TaskNode(west);
-        TaskNode[] L0Subtasks = new TaskNode[]{nt, et, st, wt};
+        TaskNode[] L1Subtasks = new TaskNode[]{nt, et, st, wt};
 
-        TaskNode a2rt = new L1TaskNode(aget_to_room, gw.generateDomain(), L0Subtasks);
+        TaskNode a2rt = new L1TaskNode(aget_to_room, gw.generateDomain(), L1Subtasks);
         TaskNode L1Root = new RootTaskNode("root",new TaskNode[]{a2rt},domainL1, L1tf,L1rf);
 
         List<AMDPPolicyGenerator> pgList = new ArrayList<AMDPPolicyGenerator>();
@@ -139,13 +151,14 @@ public class AmdpDriver {
 		
         AMDPAgent agent = new AMDPAgent(L1Root.getApplicableGroundedTasks(L1_state).get(0),pgList);
         SimulatedEnvironment env = new SimulatedEnvironment(gw.generateDomain(), L0_state);
-//        GridWorldEnv env = new GridWorldEnv(gw.generateDomain(), L0_state);
         
        
         //Timing and performance data
-
+        System.out.println("start location: " + goal_location);
+        
         long startTime = System.currentTimeMillis();
-        Episode e = agent.actUntilTermination(env, maxTrajectoryLength);
+//        Episode e = agent.actUntilTermination(env, maxTrajectoryLength);
+        Episode e = agent.actUntilTermination(env, 2);
         long endTime = System.currentTimeMillis();
 
         long duration = endTime - startTime;
@@ -153,8 +166,9 @@ public class AmdpDriver {
         //Visualizer v = GridWorldVisualizer.getVisualizer("amdp/data/resources/robotImages"); //have to write
         //		System.out.println(ea.getState(0).toString());
         //new EpisodeSequenceVisualizer(v, domainL0, Arrays.asList(e));
-
+        
         System.out.println(e.actionSequence.size());
+//        System.out.println(e.actionSequence);
         System.out.println(e.discountedReturn(1.));
 
         int count=0;
@@ -205,11 +219,12 @@ public class AmdpDriver {
             l0 = ((NonPrimitiveTaskNode)gt.getT()).domain();
             l0.setModel(new FactoredModel(((FactoredModel)l0.getModel()).getStateModel(),gt.rewardFunction(), gt.terminalFunction()));
 
+            ValueFunction heuristic = getL0Heuristic(s, gt.rewardFunction());
             BoundedRTDPForTests brtd = new BoundedRTDPForTests(l0, this.discount,
                     new SimpleHashableStateFactory(false),
-                    new ConstantValueFunction(0.), new ConstantValueFunction(1.), 0.01, -1);
+                    new ConstantValueFunction(0.), new ConstantValueFunction(1.0), 0.1, 50);
             brtd.setRemainingNumberOfBellmanUpdates(bellmanBudgetL0);
-            brtd.setMaxRolloutDepth(200);
+            brtd.setMaxRolloutDepth(50);
             brtd.toggleDebugPrinting(true);
             brtdpList.add(brtd);
             brtd.planFromState(s);
@@ -225,12 +240,13 @@ public class AmdpDriver {
             l0 = ((NonPrimitiveTaskNode)gt.getT()).domain();
             l0.setModel(new FactoredModel(((FactoredModel)l0.getModel()).getStateModel(),gt.rewardFunction(), gt.terminalFunction()));
 
+            ValueFunction heuristic = getL0Heuristic(s, gt.rewardFunction());
             BoundedRTDPForTests brtd = new BoundedRTDPForTests(l0, this.discount,
                     new SimpleHashableStateFactory(false),
                     new ConstantValueFunction(0.),
-                    new ConstantValueFunction(1.), 0.01, -1);
+                    new ConstantValueFunction(1.0), 0.1, 50);
             brtd.setRemainingNumberOfBellmanUpdates(bellmanBudgetL0);
-            brtd.setMaxRolloutDepth(200);
+            brtd.setMaxRolloutDepth(50);
             brtd.toggleDebugPrinting(true);
             brtdpList.add(brtd);
             brtd.planFromState(s);
@@ -259,11 +275,11 @@ public class AmdpDriver {
             BoundedRTDPForTests brtdp = new BoundedRTDPForTests(l1, discount, shf,
                     new ConstantValueFunction(0.),
                     new ConstantValueFunction(1.),
-                    0.01,
-                    2000);
+                    0.1,
+                    100);
 
             brtdp.setRemainingNumberOfBellmanUpdates(bellmanBudgetL1);
-            brtdp.setMaxRolloutDepth(500);
+            brtdp.setMaxRolloutDepth(50);
             brtdp.toggleDebugPrinting(true);
 
          //   Policy p = brtdp.planFromState(s);
@@ -286,11 +302,11 @@ public class AmdpDriver {
             BoundedRTDPForTests brtdp = new BoundedRTDPForTests(l1, discount, shf,
                     new ConstantValueFunction(0.),
                     new ConstantValueFunction(1.),
-                    0.01,
+                    0.1,
                     2000);
 
             brtdp.setRemainingNumberOfBellmanUpdates(bellmanBudgetL1);
-            brtdp.setMaxRolloutDepth(500);
+            brtdp.setMaxRolloutDepth(100);
             brtdp.toggleDebugPrinting(true);
 
            // Policy p = brtdp.planFromState(s);
@@ -298,6 +314,82 @@ public class AmdpDriver {
             return brtdp;
         }
     }
+    
+    public static ValueFunction getL0Heuristic(State s, RewardFunction rf){
+
+        double discount = 0.99;
+        // prop name if block -> block and room if
+        GroundedPropSC rfCondition = (GroundedPropSC)((PullCostGoalRF)rf).getGoalCondition();
+        String PFName = rfCondition.gp.pf.getName();
+        String[] params = rfCondition.gp.params;
+        if(PFName.equals(AmdpL0Domain.PF_AGENT_IN_COORDINATE_RECTANGLE)){
+            return new AgentToRoomHeuristic(params[0], discount);
+        }
+        throw new RuntimeException("Unknown Reward Function with propositional function " + PFName + ". Cannot construct l0 heuristic.");
+    }
+    
+    public static class AgentToRoomHeuristic implements ValueFunction{
+
+        String goalRoom;
+        double discount;
+
+        public AgentToRoomHeuristic(String goalRoom, double discount) {
+            this.goalRoom = goalRoom;
+            this.discount = discount;
+        }
+
+        //@Override
+        //public double qValue(State s, AbstractGroundedAction a) {
+        //    return value(s);
+        //}
+
+        @Override
+        public double value(State s) {
+
+            int delta = 1;
+            ObjectInstance region = ((AmdpL0State)s).object(this.goalRoom);
+
+            //get the agent
+            AmdpL0Agent agent = ((AmdpL0State)s).agent;
+            int ax = agent.x;
+            int ay = agent.y;
+
+
+            int l = (Integer) region.get(AmdpL0Domain.VAR_LEFT);
+            int r = (Integer)region.get(AmdpL0Domain.VAR_RIGHT);
+            int b = (Integer)region.get(AmdpL0Domain.VAR_BOTTOM);
+            int t = (Integer)region.get(AmdpL0Domain.VAR_TOP);
+
+            int dist = toRegionManDistance(ax, ay, l, r, b, t, delta);
+
+            double fullChanceV = Math.pow(discount, dist-1);
+            double v = fullChanceV;
+
+            return v;
+        }
+    }
+    
+    public static int toRegionManDistance(int x, int y, int l, int r, int b, int t, int delta){
+        int dist = 0;
+
+        //use +1s because boundaries define wall, which is not sufficient to be in the room
+        if(x <= l){
+            dist += l-x + delta;
+        }
+        else if(x >= r){
+            dist += x - r + delta;
+        }
+
+        if(y <= b){
+            dist += b - y + delta;
+        }
+        else if(y >= t){
+            dist += y - t + delta;
+        }
+
+        return dist;
+    }
+
  
     //returns a grid of locations (for coloring)
     public static List<GridLocation> make_color_map(AmdpL0Room r, String flag){

@@ -1,6 +1,16 @@
 package gridWorldL1;
 
+import burlap.behavior.policy.Policy;
+import burlap.behavior.policy.PolicyUtils;
+import burlap.behavior.singleagent.auxiliary.StateEnumerator;
+import burlap.behavior.singleagent.auxiliary.StateReachability;
+import burlap.behavior.singleagent.auxiliary.valuefunctionvis.ValueFunctionVisualizerGUI;
+import burlap.behavior.singleagent.planning.Planner;
+import burlap.behavior.singleagent.planning.stochastic.valueiteration.ValueIteration;
+import burlap.behavior.valuefunction.ValueFunction;
+import burlap.domain.singleagent.gridworld.state.GridLocation;
 import burlap.mdp.auxiliary.DomainGenerator;
+import burlap.mdp.auxiliary.common.GoalConditionTF;
 import burlap.mdp.auxiliary.common.NullTermination;
 import burlap.mdp.auxiliary.stateconditiontest.StateConditionTest;
 import burlap.mdp.core.TerminalFunction;
@@ -14,11 +24,20 @@ import burlap.mdp.core.oo.state.ObjectInstance;
 import burlap.mdp.core.state.State;
 import burlap.mdp.singleagent.common.GoalBasedRF;
 import burlap.mdp.singleagent.common.UniformCostRF;
+import burlap.mdp.singleagent.environment.EnvironmentOutcome;
 import burlap.mdp.singleagent.environment.SimulatedEnvironment;
 import burlap.mdp.singleagent.model.FactoredModel;
 import burlap.mdp.singleagent.model.RewardFunction;
 import burlap.mdp.singleagent.oo.OOSADomain;
 import burlap.mdp.singleagent.oo.ObjectParameterizedActionType;
+import burlap.statehashing.HashableStateFactory;
+import burlap.statehashing.simple.SimpleHashableStateFactory;
+import gridAmdpFramework.GroundedPropSC;
+import gridWorldAmdp.AmdpStateMapper;
+import gridWorldL0.AmdpL0Agent;
+import gridWorldL0.AmdpL0Domain;
+import gridWorldL0.AmdpL0Room;
+import gridWorldL0.AmdpL0State;
 
 import static gridWorldL0.AmdpL0Domain.*;
 import static gridWorldL1.AmdpL1Domain.*;
@@ -127,92 +146,132 @@ public class AmdpL1Domain implements DomainGenerator{
             return src.get(VAR_IN_ROOM).equals(targetOb);
         }
         
-//        public static void main(String[] args) {
-//
-//        	//L0
-//        	PropositionalFunction pfL0 = new PF_InCoordinateRectangle(PF_AGENT_IN_COORDINATE_RECTANGLE, new String[]{CLASS_COORDINATE_RECTANGLE});
-//        	GroundedProp gpL0 =  new GroundedProp(pfL0,new String[]{"room1"}); //Ground generic proposition to goal
-//
-//        	GroundedPropSC L0sc = new GroundedPropSC(gpL0);
-//    	    GoalBasedRF L0rf = new GoalBasedRF(L0sc, 1, 0.);
-//    	    GoalConditionTF L0tf = new GoalConditionTF(L0sc);
-//    	    
-//    	    //L1
-//    	    PropositionalFunction pfL1 = new PF_InRoom(PF_AGENT_IN_ROOM, new String[]{CLASS_ROOM});
-//    	    GroundedProp gpL1 =  new GroundedProp(pfL1,new String[]{"room1"});
-//    	    
-//    	    GroundedPropSC L1sc = new GroundedPropSC(gpL1);
-//    	    GoalBasedRF L1rf = new GoalBasedRF(L1sc, 1, 0.);
-//    	    GoalConditionTF L1tf = new GoalConditionTF(L1sc);
-//    	   
-//            AmdpL0Domain gw = new AmdpL0Domain(11, 11); // 11x11 grid world
-//    		gw.setMapToFourRooms(); // four rooms layout
-//    		gw.setRf(L0rf);
-//    		gw.setTf(L0tf);
-//    		
-//    		OOSADomain domainL0 = gw.generateDomain(); // generate the grid world domain
-//    		domainL0.addPropFunction(pfL0); //IMPORTANT
-//    		domainL0.addStateClass(CLASS_COORDINATE_RECTANGLE, AmdpL0Room.class); //Not sure what this does...
-//
-//    		//Create States
-//    		//L0: room object (room assignment numbered top-left proceeding counterclockwise) 
-//    		AmdpL0Room r1L0 = new AmdpL0Room("room1", 10, 6, 5, 10, 5, 8);
-//    		AmdpL0Room r2L0 = new AmdpL0Room("room2", 10, 0, 6, 4, 1, 5);
-//    		AmdpL0Room r3L0 = new AmdpL0Room("room3", 4, 0, 0, 4, 5, 1);
-//    		AmdpL0Room r4L0 = new AmdpL0Room("room4", 3, 6, 0, 10, 8, 4);
-//    		List<AmdpL0Room> L0_rooms = new ArrayList<AmdpL0Room>(Arrays.asList(r1L0, r2L0, r3L0, r4L0));
-//    		List<GridLocation> locations = new ArrayList<GridLocation>(); 
-//    		locations.add(new GridLocation(10,10,"yes"));
-//    		
-//    		//L0 State-->Starting location(GridAgent), Rooms(AmdpL0Room), Ending Location(GridLocation)
-//    		AmdpL0State L0_state = new AmdpL0State(new GridAgent(0,0, "agent"), L0_rooms, locations);
-//
-////            StateConditionTest sc = new InRegionSC("block0", "room1");
-////            RewardFunction rf = new GoalBasedRF(sc, 1.);
-////            TerminalFunction tf = new GoalConditionTF(sc);
-//            
-//    		//L1
-//    		AmdpL1Domain rw = new AmdpL1Domain(domainL0, L1rf, L1tf);
-//    	
-//    		
-//    		OOSADomain domainL1 = rw.generateDomain();
-//    		domainL1.addPropFunction(pfL1);
-//    		domainL1.addStateClass(CLASS_ROOM, AmdpL1Room.class);
-//
-//    		
-//            State L1_state = new AmdpStateMapper().mapState(L0_state);
+        public static void main(String[] args) {
+
+        	//L0
+        	PropositionalFunction pfL0 = new PF_InCoordinateRectangle(PF_AGENT_IN_COORDINATE_RECTANGLE, new String[]{CLASS_COORDINATE_RECTANGLE});
+        	GroundedProp gpL0 =  new GroundedProp(pfL0,new String[]{"room1"}); //Ground generic proposition to goal
+
+        	GroundedPropSC L0sc = new GroundedPropSC(gpL0);
+    	    GoalBasedRF L0rf = new GoalBasedRF(L0sc, 1, 0.);
+    	    GoalConditionTF L0tf = new GoalConditionTF(L0sc);
+    	    
+    	    //L1
+    	    PropositionalFunction pfL1 = new PF_InRoom(PF_AGENT_IN_ROOM, new String[]{CLASS_ROOM});
+    	    GroundedProp gpL1 =  new GroundedProp(pfL1,new String[]{"room1"});
+    	    
+    	    GroundedPropSC L1sc = new GroundedPropSC(gpL1);
+    	    GoalBasedRF L1rf = new GoalBasedRF(L1sc, 1, 0.);
+    	    GoalConditionTF L1tf = new GoalConditionTF(L1sc);
+    	   
+            AmdpL0Domain gw = new AmdpL0Domain(L0rf, L0tf); // 11x11 grid world
+    		gw.setMapToFourRooms(); // four rooms layout
+
+    		OOSADomain domainL0 = gw.generateDomain(); // generate the grid world domain
+    		domainL0.addPropFunction(pfL0); //IMPORTANT
+    		domainL0.addStateClass(CLASS_COORDINATE_RECTANGLE, AmdpL0Room.class); //Not sure what this does...
+
+    		//Create States
+    		//L0: room object (room assignment numbered top-left proceeding counterclockwise) 
+    		AmdpL0Room r1L0 = new AmdpL0Room("room1", 10, 6, 5, 10, 5, 8);
+    		AmdpL0Room r2L0 = new AmdpL0Room("room2", 10, 0, 6, 4, 1, 5);
+    		AmdpL0Room r3L0 = new AmdpL0Room("room3", 4, 0, 0, 4, 5, 1);
+    		AmdpL0Room r4L0 = new AmdpL0Room("room4", 3, 6, 0, 10, 8, 4);
+    		List<AmdpL0Room> L0_rooms = new ArrayList<AmdpL0Room>(Arrays.asList(r1L0, r2L0, r3L0, r4L0));
+    		List<GridLocation> locations = new ArrayList<GridLocation>(); 
+    		locations.add(new GridLocation(10,10,"yes"));
+    		
+    		//L0 State-->Starting location(GridAgent), Rooms(AmdpL0Room), Ending Location(GridLocation)
+    		AmdpL0State L0_state = new AmdpL0State(new AmdpL0Agent(0,0, "agent"), L0_rooms, locations);
+
+//            StateConditionTest sc = new InRegionSC("block0", "room1");
+//            RewardFunction rf = new GoalBasedRF(sc, 1.);
+//            TerminalFunction tf = new GoalConditionTF(sc);
+            
+    		//L1
+    		AmdpL1Domain rw = new AmdpL1Domain(L1rf, L1tf);
+    	
+    		OOSADomain domainL1 = rw.generateDomain();
+    		domainL1.addPropFunction(pfL1);
+    		domainL1.addStateClass(CLASS_ROOM, AmdpL1Room.class);
+
+            State L1_state = new AmdpStateMapper().mapState(L0_state);
 //            System.out.print(L0_state.toString());
 //            System.out.println(L1_state.toString());
 //            System.out.println(domainL1.getActionTypes());
 //            System.out.println(ACTION_AGENT_TO_ROOM);
 //            System.out.println(domainL1.getAction(ACTION_AGENT_TO_ROOM));
 //            
-////            System.out.println(((AmdpL1State)L1_state).objectsOfClass(AmdpL1Domain.CLASS_ROOM));
-//            
-//            ActionType at = domainL1.getAction(ACTION_AGENT_TO_ROOM);
-//            
-//            List<Action> a = at.allApplicableActions(L1_state);
-//            System.out.println("actions: " + a.size());
-//
-//
-//
-//
+//            System.out.println(((AmdpL1State)L1_state).objectsOfClass(AmdpL1Domain.CLASS_ROOM));
+            
+            ActionType at = domainL1.getAction(ACTION_AGENT_TO_ROOM);
+            ActionType a0 = domainL0.getAction(ACTION_NORTH);
+            
+            Boolean watch = false;
+            if (watch) {
+            List<Action> a_1 = at.allApplicableActions(L1_state);
+            System.out.println("actions: " + a_1.size());
+            //System.out.println(L1_state.toString());
+            
+            EnvironmentOutcome eo_1 = domainL1.getModel().sample(L1_state, a_1.get(0));
+            System.out.println("+++++++++++++++++++++++");
+            System.out.println(eo_1.o);
+            System.out.println(a_1.get(0).toString());
+            System.out.println(eo_1.op);
+            }
+            else {
+            List<Action> a_0 = a0.allApplicableActions(L0_state);
+            System.out.println("actions: " + a_0.size());
+            //System.out.println(L0_state.toString());
+            
+            EnvironmentOutcome eo_0 = domainL0.getModel().sample(L0_state, a_0.get(0));
+            System.out.println("+++++++++++++++++++++++");
+            System.out.println(eo_0.o);
+            System.out.println(a_0.get(0).toString());
+            System.out.println(eo_0.op);
+            }
+            
+            HashableStateFactory hashingFactory = new SimpleHashableStateFactory();
+            String outputPath = "";
+        	Planner planner = new ValueIteration(domainL0, 0.99, hashingFactory, 0.001, 100);
+        	Policy p = planner.planFromState(L0_state);
+        	PolicyUtils.rollout(p, L0_state, domainL0.getModel()).write(outputPath + "vi");
+  
+//      		List<State> allStates = StateReachability.getReachableStates(
+//    			L0_state, domainL0, hashingFactory);
+//    		ValueFunctionVisualizerGUI gui = AmdpL0Domain.getGridWorldValueFunctionVisualization(
+//    			allStates, 11, 11, (ValueFunction)planner, p);
+//    		gui.initGUI();
+        	
+        	
+            
+        }
+        
+    	public void simpleValueFunctionVis(ValueFunction valueFunction, Policy p){
+
+
+    	}
+
+            
+            
+            
+            
 //            if(false) {
 //
 //
 //
 //                SimpleHashableStateFactory shf = new SimpleHashableStateFactory(false);
-////                StateEnumerator se = new StateEnumerator(adomain, shf);
-////                se.findReachableStatesAndEnumerate(as);
-////                System.out.println("states enum: " + se.numStatesEnumerated());
-//    //
-////                for(int i=0;i<se.numStatesEnumerated();i++){
-////                    for(int j=0;j<se.numStatesEnumerated();j++){
-////                        State si = se.getStateForEnumerationId(i);
-////                        State sj = se.getStateForEnumerationId(j);
-////                        if(!si.equals(sj) && si.toString())
-////                    }
-////                }
+//                StateEnumerator se = new StateEnumerator(domainL1, shf);
+//                se.findReachableStatesAndEnumerate((State) rw);
+//                System.out.println("states enum: " + se.numStatesEnumerated());
+//    
+//                for(int i=0;i<se.numStatesEnumerated();i++){
+//                    for(int j=0;j<se.numStatesEnumerated();j++){
+//                        State si = se.getStateForEnumerationId(i);
+//                        State sj = se.getStateForEnumerationId(j);
+//                        if(!si.equals(sj) && si.toString())
+//                    }
+//                }
 //
 //
 //                BoundedRTDPForTests planner = new BoundedRTDPForTests(domainL1, 0.99, shf,
@@ -228,8 +287,6 @@ public class AmdpL1Domain implements DomainGenerator{
 //                System.out.println(ea.actionString("\n"));
 //
 //            }
-//
-//        }
 
         
         

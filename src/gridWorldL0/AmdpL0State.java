@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import amdp.cleanup.state.CleanupAgent;
 import burlap.domain.singleagent.gridworld.state.GridLocation;
 import burlap.mdp.core.oo.state.MutableOOState;
 import burlap.mdp.core.oo.state.OOStateUtilities;
@@ -98,7 +99,7 @@ public class AmdpL0State implements MutableOOState {
 	}
 
 	@Override
-	public State copy() {
+	public AmdpL0State copy() {
 		return new AmdpL0State(agent, rooms, locations);
 	}
 
@@ -113,17 +114,19 @@ public class AmdpL0State implements MutableOOState {
 		return ind;
 	}
 
-//	@Override
-//	public String toString() {
-//		return getClass().getName() + "@" + Integer.toHexString(hashCode());
-//	}
-
-	public AmdpL0Agent touchAgent(){
-		AmdpL0Agent agent = new AmdpL0Agent();
-		agent = this.agent;
-		return agent;
+	@Override
+	public String toString() {
+		System.out.println(getClass());
+		System.out.println(getClass().getName());
+		System.out.println(Integer.toHexString(hashCode()));
+		return OOStateUtilities.ooStateToString(this);
 	}
-	
+
+    public AmdpL0Agent touchAgent(){
+        this.agent = agent.copy();
+        return agent;
+    }
+
    //compares object give a specific field ^name
 	protected int roomInd(String oname){
 		int ind = -1;

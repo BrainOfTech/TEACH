@@ -104,6 +104,7 @@ public class AmdpL0Domain implements DomainGenerator {
 				new UniversalActionType(ACTION_WEST));
 
 		AmdpL0Model smodel = new AmdpL0Model(cmap, getTransitionDynamics());
+		//AmdpL0Model smodel = new AmdpL0Model();
 		RewardFunction rf = this.rf;
 		TerminalFunction tf = this.tf;
 

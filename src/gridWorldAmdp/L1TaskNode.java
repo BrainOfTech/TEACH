@@ -1,9 +1,6 @@
 package gridWorldAmdp;
 
-import amdp.amdpframework.GroundedPropSC;
-import amdp.amdpframework.GroundedTask;
-import amdp.amdpframework.NonPrimitiveTaskNode;
-import amdp.amdpframework.TaskNode;
+
 import amdp.cleanup.PullCostGoalRF;
 import burlap.mdp.auxiliary.common.GoalConditionTF;
 import burlap.mdp.auxiliary.stateconditiontest.StateConditionTest;
@@ -15,6 +12,10 @@ import burlap.mdp.core.oo.propositional.GroundedProp;
 import burlap.mdp.core.state.State;
 import burlap.mdp.singleagent.model.RewardFunction;
 import burlap.mdp.singleagent.oo.OOSADomain;
+import gridAmdpFramework.GroundedPropSC;
+import gridAmdpFramework.GroundedTask;
+import gridAmdpFramework.NonPrimitiveTaskNode;
+import gridAmdpFramework.TaskNode;
 import gridWorldL0.AmdpL0Domain;
 import gridWorldL1.AmdpL1Domain;
 

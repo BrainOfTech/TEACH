@@ -1,11 +1,11 @@
 package gridWorldL0;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
 import burlap.debugtools.RandomFactory;
-import burlap.domain.singleagent.gridworld.state.GridAgent;
 import burlap.mdp.core.StateTransitionProb;
 import burlap.mdp.core.action.Action;
 import burlap.mdp.core.state.State;
@@ -23,9 +23,14 @@ public class AmdpL0Model implements FullStateModel{
 		this.map = map;
 		this.transitionDynamics = transitionDynamics;
 	}
+	
+	public AmdpL0Model(){
+		
+	}
 
 	@Override
 	public List<StateTransitionProb> stateTransitions(State s, Action a) {
+		AmdpL0State ns = ((AmdpL0State)s);
 
 		double [] directionProbs = transitionDynamics[actionInd(a.actionName())];
 
@@ -35,9 +40,9 @@ public class AmdpL0Model implements FullStateModel{
 			if(p == 0.){
 				continue; //cannot transition in this direction
 			}
-			State ns = s.copy();
+
 			int [] dcomps = movementDirectionFromIndex(i);
-			ns = move(ns, dcomps[0], dcomps[1]);
+			ns = (AmdpL0State) move(ns, dcomps[0], dcomps[1]);
 
 			//make sure this direction doesn't actually stay in the same place and replicate another no-op
 			boolean isNew = true;
@@ -57,10 +62,10 @@ public class AmdpL0Model implements FullStateModel{
 		return transitions;
 	}
 
+    
 	@Override
 	public State sample(State s, Action a) {
-
-		s = s.copy();
+		AmdpL0State ns = ((AmdpL0State)s).copy();
 
 		double [] directionProbs = transitionDynamics[actionInd(a.actionName())];
 		double roll = rand.nextDouble();
@@ -75,16 +80,15 @@ public class AmdpL0Model implements FullStateModel{
 		}
 
 		int [] dcomps = movementDirectionFromIndex(dir);
-		return move(s, dcomps[0], dcomps[1]);
+		return move(ns, dcomps[0], dcomps[1]);
 
 	}
 	
 	protected State move(State s, int xd, int yd){
+		AmdpL0State ns = ((AmdpL0State)s);
 
-		AmdpL0State gws = (AmdpL0State)s;
-
-		int ax = gws.agent.x;
-		int ay = gws.agent.y;
+		int ax = ns.agent.x;
+		int ay = ns.agent.y;
 
 		int nx = ax+xd;
 		int ny = ay+yd;
@@ -97,35 +101,13 @@ public class AmdpL0Model implements FullStateModel{
 			ny = ay;
 		}
 
-		AmdpL0Agent nagent = gws.touchAgent();
+		AmdpL0Agent nagent = ns.touchAgent();
 		nagent.x = nx;
 		nagent.y = ny;
 
 		return s;
 	}
-	
-	public static int [] movementDirectionFromIndex(int i){
-		int [] result = null;
-		switch (i) {
-			case 0:
-				result = new int[]{0,1};
-				break;
-			case 1:
-				result = new int[]{0,-1};
-				break;
-			case 2:
-				result = new int[]{1,0};
-				break;
-			case 3:
-				result = new int[]{-1,0};
-				break;
-			default:
-				break;
-		}
-		return result;
-	}
-
-
+    
 	protected int actionInd(String name){
 		if(name.equals(ACTION_NORTH)){
 			return 0;
@@ -142,5 +124,71 @@ public class AmdpL0Model implements FullStateModel{
 		throw new RuntimeException("Unknown action " + name);
 	}
 
+	
+//    @Override
+//    public State sample(State s, Action a) {
+//        List<StateTransitionProb> stpList = this.stateTransitions(s,a);
+//        double roll = rand.nextDouble();
+//        double curSum = 0.;
+//        for(int i = 0; i < stpList.size(); i++){
+//            curSum += stpList.get(i).p;
+//            if(roll < curSum){
+//                return stpList.get(i).s;
+//            }
+//        }
+//        throw new RuntimeException("Probabilities don't sum to 1.0: " + curSum);
+//    }
+//	
+//	 @Override
+//	    public List<StateTransitionProb> stateTransitions(State s, Action a) {
+//		 	AmdpL0State ns = ((AmdpL0State)s).copy();
+//	        int actionInd = actionInd(a.actionName());
+//	        if(actionInd<4){
+//	            if(actionInd==0){
+//	                //north
+//	                int dx = 0;
+//	                int dy = 1;
+//	                return move(ns,dx,dy);
+//	            }
+//	            else if(actionInd==1){
+//	                //south
+//	                int dx = 0;
+//	                int dy = -1;
+//	                return move(ns,dx,dy);
+//	            }
+//	            else if(actionInd==2){
+//	                //east
+//	                int dx = 1;
+//	                int dy = 0;
+//	                return move(ns,dx,dy);
+//
+//	            }
+//	            else if(actionInd==3){
+//	                //west
+//	                int dx = -1;
+//	                int dy = 0;
+//	                return move(ns,dx,dy);
+//	            }
+//	        }
+//	        throw new RuntimeException("Unknown action ind: " +actionInd );
+//	    }
+//
+//    protected List<StateTransitionProb> move(State state, int xdelta, int ydelta){
+//    	AmdpL0State ns = ((AmdpL0State)state);
+//        return Arrays.asList(new StateTransitionProb(ns, 1.));
+//    }
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 }
 

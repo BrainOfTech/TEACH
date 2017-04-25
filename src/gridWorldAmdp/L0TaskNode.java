@@ -1,7 +1,8 @@
 package gridWorldAmdp;
 
-import amdp.amdpframework.PrimitiveTaskNode;
+
 import burlap.mdp.core.action.ActionType;
+import gridAmdpFramework.PrimitiveTaskNode;
 
 public class L0TaskNode extends PrimitiveTaskNode {
 
