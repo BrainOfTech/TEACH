@@ -153,7 +153,7 @@ public class AmdpL1Domain implements DomainGenerator{
         	GroundedProp gpL0 =  new GroundedProp(pfL0,new String[]{"room1"}); //Ground generic proposition to goal
 
         	GroundedPropSC L0sc = new GroundedPropSC(gpL0);
-    	    GoalBasedRF L0rf = new GoalBasedRF(L0sc, 1, 0.);
+    	    GoalBasedRF L0rf = new GoalBasedRF(L0sc, 1, -1);
     	    GoalConditionTF L0tf = new GoalConditionTF(L0sc);
     	    
     	    //L1
@@ -161,7 +161,7 @@ public class AmdpL1Domain implements DomainGenerator{
     	    GroundedProp gpL1 =  new GroundedProp(pfL1,new String[]{"room1"});
     	    
     	    GroundedPropSC L1sc = new GroundedPropSC(gpL1);
-    	    GoalBasedRF L1rf = new GoalBasedRF(L1sc, 1, 0.);
+    	    GoalBasedRF L1rf = new GoalBasedRF(L1sc, 1, -1);
     	    GoalConditionTF L1tf = new GoalConditionTF(L1sc);
     	   
             AmdpL0Domain gw = new AmdpL0Domain(L0rf, L0tf); // 11x11 grid world
@@ -178,11 +178,11 @@ public class AmdpL1Domain implements DomainGenerator{
     		AmdpL0Room r3L0 = new AmdpL0Room("room3", 4, 0, 0, 4, 5, 1);
     		AmdpL0Room r4L0 = new AmdpL0Room("room4", 3, 6, 0, 10, 8, 4);
     		List<AmdpL0Room> L0_rooms = new ArrayList<AmdpL0Room>(Arrays.asList(r1L0, r2L0, r3L0, r4L0));
-    		List<GridLocation> locations = new ArrayList<GridLocation>(); 
-    		locations.add(new GridLocation(10,10,"yes"));
+//    		List<GridLocation> locations = new ArrayList<GridLocation>(); 
+//    		locations.add(new GridLocation(10,10,"yes"));
     		
     		//L0 State-->Starting location(GridAgent), Rooms(AmdpL0Room), Ending Location(GridLocation)
-    		AmdpL0State L0_state = new AmdpL0State(new AmdpL0Agent(0,0, "agent"), L0_rooms, locations);
+    		AmdpL0State L0_state = new AmdpL0State(new AmdpL0Agent(0,0, "agent"), L0_rooms);
 
 //            StateConditionTest sc = new InRegionSC("block0", "room1");
 //            RewardFunction rf = new GoalBasedRF(sc, 1.);
@@ -237,14 +237,13 @@ public class AmdpL1Domain implements DomainGenerator{
         	Policy p = planner.planFromState(L0_state);
         	PolicyUtils.rollout(p, L0_state, domainL0.getModel()).write(outputPath + "vi");
   
-//      		List<State> allStates = StateReachability.getReachableStates(
-//    			L0_state, domainL0, hashingFactory);
-//    		ValueFunctionVisualizerGUI gui = AmdpL0Domain.getGridWorldValueFunctionVisualization(
-//    			allStates, 11, 11, (ValueFunction)planner, p);
-//    		gui.initGUI();
+      		List<State> allStates = StateReachability.getReachableStates(
+    			L0_state, domainL0, hashingFactory);
+    		ValueFunctionVisualizerGUI gui = AmdpL0Domain.getGridWorldValueFunctionVisualization(
+    			allStates, 11, 11, (ValueFunction)planner, p);
+    		gui.initGUI();
         	
-        	
-            
+        	System.out.println(outputPath);
         }
         
     	public void simpleValueFunctionVis(ValueFunction valueFunction, Policy p){

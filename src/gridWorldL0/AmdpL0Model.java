@@ -19,47 +19,13 @@ public class AmdpL0Model implements FullStateModel{
 	protected double[][] transitionDynamics;
 	protected Random rand = RandomFactory.getMapped(0);
 
-	public AmdpL0Model(int[][] map, double[][] transitionDynamics) {
+	public AmdpL0Model(int[][] map) {
 		this.map = map;
-		this.transitionDynamics = transitionDynamics;
-	}
-	
-	public AmdpL0Model(){
-		
 	}
 
 	@Override
 	public List<StateTransitionProb> stateTransitions(State s, Action a) {
-		AmdpL0State ns = ((AmdpL0State)s);
-
-		double [] directionProbs = transitionDynamics[actionInd(a.actionName())];
-
-		List <StateTransitionProb> transitions = new ArrayList<StateTransitionProb>();
-		for(int i = 0; i < directionProbs.length; i++){
-			double p = directionProbs[i];
-			if(p == 0.){
-				continue; //cannot transition in this direction
-			}
-
-			int [] dcomps = movementDirectionFromIndex(i);
-			ns = (AmdpL0State) move(ns, dcomps[0], dcomps[1]);
-
-			//make sure this direction doesn't actually stay in the same place and replicate another no-op
-			boolean isNew = true;
-			for(StateTransitionProb tp : transitions){
-				if(tp.s.equals(ns)){
-					isNew = false;
-					tp.p += p;
-					break;
-				}
-			}
-
-			if(isNew){
-				StateTransitionProb tp = new StateTransitionProb(ns, p);
-				transitions.add(tp);
-			}
-		}
-		return transitions;
+		return FullStateModel.Helper.deterministicTransition(this, s, a);
 	}
 
     
@@ -67,21 +33,26 @@ public class AmdpL0Model implements FullStateModel{
 	public State sample(State s, Action a) {
 		AmdpL0State ns = ((AmdpL0State)s).copy();
 
-		double [] directionProbs = transitionDynamics[actionInd(a.actionName())];
-		double roll = rand.nextDouble();
-		double curSum = 0.;
-		int dir = 0;
-		for(int i = 0; i < directionProbs.length; i++){
-			curSum += directionProbs[i];
-			if(roll < curSum){
-				dir = i;
-				break;
+		int i = actionInd(a.actionName());
+			int [] dcomps = null;
+			switch (i) {
+				case 0:
+					dcomps = new int[]{0,1};
+					break;
+				case 1:
+					dcomps = new int[]{0,-1};
+					break;
+				case 2:
+					dcomps = new int[]{1,0};
+					break;
+				case 3:
+					dcomps = new int[]{-1,0};
+					break;
+				default:
+					break;
 			}
-		}
 
-		int [] dcomps = movementDirectionFromIndex(dir);
 		return move(ns, dcomps[0], dcomps[1]);
-
 	}
 	
 	protected State move(State s, int xd, int yd){

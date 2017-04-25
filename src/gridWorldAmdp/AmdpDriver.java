@@ -1,8 +1,13 @@
 package gridWorldAmdp;
 
 import burlap.behavior.policy.Policy;
+import burlap.behavior.policy.PolicyUtils;
 import burlap.behavior.singleagent.Episode;
 import burlap.behavior.singleagent.auxiliary.EpisodeSequenceVisualizer;
+import burlap.behavior.singleagent.auxiliary.StateReachability;
+import burlap.behavior.singleagent.auxiliary.valuefunctionvis.ValueFunctionVisualizerGUI;
+import burlap.behavior.singleagent.planning.Planner;
+import burlap.behavior.singleagent.planning.stochastic.valueiteration.ValueIteration;
 import burlap.behavior.valuefunction.ConstantValueFunction;
 import burlap.behavior.valuefunction.QProvider;
 import burlap.behavior.valuefunction.ValueFunction;
@@ -11,6 +16,7 @@ import burlap.domain.singleagent.gridworld.GridWorldVisualizer;
 import burlap.domain.singleagent.gridworld.state.GridLocation;
 import burlap.mdp.auxiliary.StateMapping;
 import burlap.mdp.auxiliary.common.GoalConditionTF;
+import burlap.mdp.core.TerminalFunction;
 import burlap.mdp.core.action.ActionType;
 import burlap.mdp.core.oo.propositional.GroundedProp;
 import burlap.mdp.core.oo.propositional.PropositionalFunction;
@@ -22,6 +28,7 @@ import burlap.mdp.singleagent.model.FactoredModel;
 import burlap.mdp.singleagent.model.RewardFunction;
 import burlap.mdp.singleagent.oo.OOSADomain;
 import burlap.shell.visual.VisualExplorer;
+import burlap.statehashing.HashableStateFactory;
 import burlap.statehashing.simple.SimpleHashableStateFactory;
 import burlap.visualizer.Visualizer;
 import gridAmdpFramework.AMDPAgent;
@@ -87,7 +94,7 @@ public class AmdpDriver {
 		GroundedProp gpL0 =  new GroundedProp(pfL0,new String[]{goal_location}); //Ground generic proposition to goal
 		
 	    GroundedPropSC L0sc = new GroundedPropSC(gpL0);
-	    GoalBasedRF L0rf = new GoalBasedRF(L0sc, 1, 0.);
+	    GoalBasedRF L0rf = new GoalBasedRF(L0sc, 1, -1);
 	    GoalConditionTF L0tf = new GoalConditionTF(L0sc);
 	    
 	    //L1
@@ -95,7 +102,7 @@ public class AmdpDriver {
 	    GroundedProp gpL1 =  new GroundedProp(pfL1,new String[]{goal_location});
 	    
 	    GroundedPropSC L1sc = new GroundedPropSC(gpL1);
-	    GoalBasedRF L1rf = new GoalBasedRF(L1sc, 1, 0.);
+	    GoalBasedRF L1rf = new GoalBasedRF(L1sc, 1, -1);
 	    GoalConditionTF L1tf = new GoalConditionTF(L1sc);
 	   
 	    
@@ -116,13 +123,13 @@ public class AmdpDriver {
 		AmdpL0Room r3L0 = new AmdpL0Room("room3", 4, 0, 0, 4, 5, 1);
 		AmdpL0Room r4L0 = new AmdpL0Room("room4", 3, 6, 0, 10, 8, 4);
 		List<AmdpL0Room> L0_rooms = new ArrayList<AmdpL0Room>(Arrays.asList(r1L0, r2L0, r3L0, r4L0));
-		List<GridLocation> locations = new ArrayList<GridLocation>(); 
-		//locations = make_color_map(r1L0, "goal-location"); //unusable location doubles as color map
-		locations.add(new GridLocation(0,0,"goal"));
-		locations.add(new GridLocation(10,10, "goal")); //weird bug will break program if < 2 locations...
+//		List<GridLocation> locations = new ArrayList<GridLocation>(); 
+//		//locations = make_color_map(r1L0, "goal-location"); //unusable location doubles as color map
+//		locations.add(new GridLocation(0,0,"goal"));
+//		locations.add(new GridLocation(10,10, "goal")); //weird bug will break program if < 2 locations...
 		
 		//L0 State-->Starting location(GridAgent), Rooms(AmdpL0Room), Ending Location(GridLocation)
-		AmdpL0State L0_state = new AmdpL0State(new AmdpL0Agent(start_location[0],start_location[1], agent_name), L0_rooms, locations);
+		AmdpL0State L0_state = new AmdpL0State(new AmdpL0Agent(start_location[0],start_location[1], agent_name), L0_rooms);
 		
 		//L1 State-->is dynamically set by AmdpL1StateMapper
 		State L1_state = new AmdpStateMapper().mapState(L0_state);
@@ -158,7 +165,7 @@ public class AmdpDriver {
         
         long startTime = System.currentTimeMillis();
 //        Episode e = agent.actUntilTermination(env, maxTrajectoryLength);
-        Episode e = agent.actUntilTermination(env, 2);
+        Episode e = agent.actUntilTermination(env, 100);
         long endTime = System.currentTimeMillis();
 
         long duration = endTime - startTime;
@@ -228,7 +235,22 @@ public class AmdpDriver {
             brtd.toggleDebugPrinting(true);
             brtdpList.add(brtd);
             brtd.planFromState(s);
+            
             return new GreedyReplan(brtd);
+            
+            
+//            HashableStateFactory hashingFactory = new SimpleHashableStateFactory();
+//            String outputPath = "";
+//        	Planner planner = new ValueIteration(l0, 0.99, hashingFactory, 0.001, 100);
+//        	Policy p = planner.planFromState(s);
+//        	PolicyUtils.rollout(p, s, l0.getModel()).write(outputPath + "vi");
+//        	
+//      		List<State> allStates = StateReachability.getReachableStates(
+//    			s, l0, hashingFactory);
+//    		ValueFunctionVisualizerGUI gui = AmdpL0Domain.getGridWorldValueFunctionVisualization(
+//    			allStates, 11, 11, (ValueFunction)planner, p);
+//    		gui.initGUI();
+            
         }
 
         public State generateAbstractState(State s) {
@@ -237,6 +259,12 @@ public class AmdpDriver {
 
         @Override
         public QProvider getQProvider(State s, GroundedTask gt) {
+        	if (true) {
+        		throw new RuntimeException("Should not be here!");
+        	}
+        	
+        	
+        	
             l0 = ((NonPrimitiveTaskNode)gt.getT()).domain();
             l0.setModel(new FactoredModel(((FactoredModel)l0.getModel()).getStateModel(),gt.rewardFunction(), gt.terminalFunction()));
 
