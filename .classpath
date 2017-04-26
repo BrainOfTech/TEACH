@@ -16,6 +16,6 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="/Users/arthurwandzel/Downloads/amdp1.jar"/>
+	<classpathentry kind="lib" path="lib/amdp.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

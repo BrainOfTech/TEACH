@@ -64,8 +64,8 @@ public class AmdpDriver {
     static protected MutableGlobalInteger bellmanBudgetL0 = new MutableGlobalInteger(-1);
     static protected MutableGlobalInteger bellmanBudgetL1 = new MutableGlobalInteger(-1);
 
-    static double L1Ratio = 0.65; //not sure why this value
-    static double L0Ratio = 0.3;
+    //static double L1Ratio = 0.65; //not sure why this value
+    //static double L0Ratio = 0.3; //THESE LINES DO NOT SEEM TO DO ANYTHING.
 
     static int maxTrajectoryLength = 1000;
 
