@@ -1,11 +1,11 @@
 package gridWorldL0;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
 import burlap.debugtools.RandomFactory;
-import burlap.domain.singleagent.gridworld.state.GridAgent;
 import burlap.mdp.core.StateTransitionProb;
 import burlap.mdp.core.action.Action;
 import burlap.mdp.core.state.State;
@@ -16,75 +16,48 @@ import static gridWorldL0.AmdpL0Domain.*;
 public class AmdpL0Model implements FullStateModel{
 
 	int [][] map;
-	protected double[][] transitionDynamics;
-	protected Random rand = RandomFactory.getMapped(0);
 
-	public AmdpL0Model(int[][] map, double[][] transitionDynamics) {
+	public AmdpL0Model(int[][] map) {
 		this.map = map;
-		this.transitionDynamics = transitionDynamics;
 	}
 
 	@Override
 	public List<StateTransitionProb> stateTransitions(State s, Action a) {
-
-		double [] directionProbs = transitionDynamics[actionInd(a.actionName())];
-
-		List <StateTransitionProb> transitions = new ArrayList<StateTransitionProb>();
-		for(int i = 0; i < directionProbs.length; i++){
-			double p = directionProbs[i];
-			if(p == 0.){
-				continue; //cannot transition in this direction
-			}
-			State ns = s.copy();
-			int [] dcomps = movementDirectionFromIndex(i);
-			ns = move(ns, dcomps[0], dcomps[1]);
-
-			//make sure this direction doesn't actually stay in the same place and replicate another no-op
-			boolean isNew = true;
-			for(StateTransitionProb tp : transitions){
-				if(tp.s.equals(ns)){
-					isNew = false;
-					tp.p += p;
-					break;
-				}
-			}
-
-			if(isNew){
-				StateTransitionProb tp = new StateTransitionProb(ns, p);
-				transitions.add(tp);
-			}
-		}
-		return transitions;
+		return FullStateModel.Helper.deterministicTransition(this, s, a);
 	}
 
+    
 	@Override
 	public State sample(State s, Action a) {
+		AmdpL0State ns = ((AmdpL0State)s).copy();
 
-		s = s.copy();
-
-		double [] directionProbs = transitionDynamics[actionInd(a.actionName())];
-		double roll = rand.nextDouble();
-		double curSum = 0.;
-		int dir = 0;
-		for(int i = 0; i < directionProbs.length; i++){
-			curSum += directionProbs[i];
-			if(roll < curSum){
-				dir = i;
-				break;
+		int i = actionInd(a.actionName());
+			int [] dcomps = null;
+			switch (i) {
+				case 0:
+					dcomps = new int[]{0,1};
+					break;
+				case 1:
+					dcomps = new int[]{0,-1};
+					break;
+				case 2:
+					dcomps = new int[]{1,0};
+					break;
+				case 3:
+					dcomps = new int[]{-1,0};
+					break;
+				default:
+					break;
 			}
-		}
 
-		int [] dcomps = movementDirectionFromIndex(dir);
-		return move(s, dcomps[0], dcomps[1]);
-
+		return move(ns, dcomps[0], dcomps[1]);
 	}
 	
 	protected State move(State s, int xd, int yd){
+		AmdpL0State ns = ((AmdpL0State)s);
 
-		AmdpL0State gws = (AmdpL0State)s;
-
-		int ax = gws.agent.x;
-		int ay = gws.agent.y;
+		int ax = ns.agent.x;
+		int ay = ns.agent.y;
 
 		int nx = ax+xd;
 		int ny = ay+yd;
@@ -97,35 +70,13 @@ public class AmdpL0Model implements FullStateModel{
 			ny = ay;
 		}
 
-		AmdpL0Agent nagent = gws.touchAgent();
+		AmdpL0Agent nagent = ns.touchAgent();
 		nagent.x = nx;
 		nagent.y = ny;
 
 		return s;
 	}
-	
-	public static int [] movementDirectionFromIndex(int i){
-		int [] result = null;
-		switch (i) {
-			case 0:
-				result = new int[]{0,1};
-				break;
-			case 1:
-				result = new int[]{0,-1};
-				break;
-			case 2:
-				result = new int[]{1,0};
-				break;
-			case 3:
-				result = new int[]{-1,0};
-				break;
-			default:
-				break;
-		}
-		return result;
-	}
-
-
+    
 	protected int actionInd(String name){
 		if(name.equals(ACTION_NORTH)){
 			return 0;
@@ -141,6 +92,5 @@ public class AmdpL0Model implements FullStateModel{
 		}
 		throw new RuntimeException("Unknown action " + name);
 	}
-
 }
 

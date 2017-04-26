@@ -31,7 +31,7 @@ public class AmdpL0Room implements ObjectInstance {
     }
     
     public String className() {
-        return CLASS_COORDINATE_RECTANGLE;
+        return CLASS_COORDINATE_SPACE;
     }
 
     public String name() {
@@ -48,7 +48,10 @@ public class AmdpL0Room implements ObjectInstance {
         }
 
         String key = (String)variableKey;
-        if(key.equals(VAR_TOP)){
+        if (key.equals(VAR_ROOM)){
+        	return name;
+        }
+        else if (key.equals(VAR_TOP)){
             return top;
         }
         else if(key.equals(VAR_LEFT)){
