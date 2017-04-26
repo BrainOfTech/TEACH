@@ -77,8 +77,8 @@ public class AmdpDriver {
 		
 		//Create Identifiers
 		String agent_name = "agent";
-		int[] start_location = {0,0};
-		String goal_location = "room1";
+		int[] start_location = {10,10};
+		String goal_location = "room3";
 		
 		
 		//Create Termination/Reward Functions via the propositional function
@@ -168,19 +168,7 @@ public class AmdpDriver {
 //        System.out.println("State Sequence: \n" + e.stateSequence);
 
 		Visualizer v = GridWorldVisualizer.getVisualizer(gw.getMap(), goal_location, L0_state);
-        //Visualizer v = GridWorldVisualizer.getVisualizer2(11,11);
 		new EpisodeSequenceVisualizer(v, domainL0, Arrays.asList(e));
-//		VisualExplorer exp = new VisualExplorer(domainL0, v, L0_state);
-//
-////		// set control keys to use w-s-a-d
-////		exp.addKeyAction("w", AmdpL0Domain.ACTION_NORTH, "");
-////		exp.addKeyAction("s", AmdpL0Domain.ACTION_SOUTH, "");
-////		exp.addKeyAction("a", AmdpL0Domain.ACTION_WEST, "");
-////		exp.addKeyAction("d", AmdpL0Domain.ACTION_EAST, "");
-
-//		exp.initGUI();
-
-        
 
         int count=0;
         for(int i=0;i<brtdpList.size();i++) {
@@ -195,19 +183,6 @@ public class AmdpDriver {
             System.out.println(b.getNumberOfBellmanUpdates());
         }
 //        System.out.println("backups: " + totalBudget);
-
-		
-//		// create visualizer and explorer
-//		Visualizer v = GridWorldVisualizer.getVisualizer(gw.getMap());
-//		VisualExplorer exp = new VisualExplorer(domainL1, v, L0_state);
-//
-//		// set control keys to use w-s-a-d
-//		exp.addKeyAction("w", GridWorldDomain.ACTION_NORTH, "");
-//		exp.addKeyAction("s", GridWorldDomain.ACTION_SOUTH, "");
-//		exp.addKeyAction("a", GridWorldDomain.ACTION_WEST, "");
-//		exp.addKeyAction("d", GridWorldDomain.ACTION_EAST, "");
-//
-//		exp.initGUI();
 
 	}
 	
