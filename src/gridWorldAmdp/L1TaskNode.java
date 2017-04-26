@@ -63,7 +63,7 @@ public class L1TaskNode extends NonPrimitiveTaskNode {
     public TerminalFunction getL0Tf(ObjectParameterizedAction oga){
         StateConditionTest sc = null;
         if(oga.actionName().equals(AmdpL1Domain.ACTION_AGENT_TO_ROOM)){
-            sc = new GroundedPropSC(new GroundedProp(this.oosaDomain.propFunction(AmdpL0Domain.PF_AGENT_IN_COORDINATE_RECTANGLE), new String[]{oga.getObjectParameters()[0]}));
+            sc = new GroundedPropSC(new GroundedProp(this.oosaDomain.propFunction(AmdpL0Domain.PF_AGENT_IN_COORDINATE_SPACE), new String[]{oga.getObjectParameters()[0]}));
         }
         return new GoalConditionTF(sc);
     }
@@ -72,7 +72,7 @@ public class L1TaskNode extends NonPrimitiveTaskNode {
     public RewardFunction getL0Rf(ObjectParameterizedAction oga){
         StateConditionTest sc = null;
         if(oga.actionName().equals(AmdpL1Domain.ACTION_AGENT_TO_ROOM)){
-            sc = new GroundedPropSC(new GroundedProp(this.oosaDomain.propFunction(AmdpL0Domain.PF_AGENT_IN_COORDINATE_RECTANGLE), new String[]{oga.getObjectParameters()[0]}));
+            sc = new GroundedPropSC(new GroundedProp(this.oosaDomain.propFunction(AmdpL0Domain.PF_AGENT_IN_COORDINATE_SPACE), new String[]{oga.getObjectParameters()[0]}));
         }
         return new PullCostGoalRF(sc, 1., 0.);
     }

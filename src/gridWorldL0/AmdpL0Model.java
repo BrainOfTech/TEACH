@@ -16,8 +16,6 @@ import static gridWorldL0.AmdpL0Domain.*;
 public class AmdpL0Model implements FullStateModel{
 
 	int [][] map;
-	protected double[][] transitionDynamics;
-	protected Random rand = RandomFactory.getMapped(0);
 
 	public AmdpL0Model(int[][] map) {
 		this.map = map;
@@ -94,72 +92,5 @@ public class AmdpL0Model implements FullStateModel{
 		}
 		throw new RuntimeException("Unknown action " + name);
 	}
-
-	
-//    @Override
-//    public State sample(State s, Action a) {
-//        List<StateTransitionProb> stpList = this.stateTransitions(s,a);
-//        double roll = rand.nextDouble();
-//        double curSum = 0.;
-//        for(int i = 0; i < stpList.size(); i++){
-//            curSum += stpList.get(i).p;
-//            if(roll < curSum){
-//                return stpList.get(i).s;
-//            }
-//        }
-//        throw new RuntimeException("Probabilities don't sum to 1.0: " + curSum);
-//    }
-//	
-//	 @Override
-//	    public List<StateTransitionProb> stateTransitions(State s, Action a) {
-//		 	AmdpL0State ns = ((AmdpL0State)s).copy();
-//	        int actionInd = actionInd(a.actionName());
-//	        if(actionInd<4){
-//	            if(actionInd==0){
-//	                //north
-//	                int dx = 0;
-//	                int dy = 1;
-//	                return move(ns,dx,dy);
-//	            }
-//	            else if(actionInd==1){
-//	                //south
-//	                int dx = 0;
-//	                int dy = -1;
-//	                return move(ns,dx,dy);
-//	            }
-//	            else if(actionInd==2){
-//	                //east
-//	                int dx = 1;
-//	                int dy = 0;
-//	                return move(ns,dx,dy);
-//
-//	            }
-//	            else if(actionInd==3){
-//	                //west
-//	                int dx = -1;
-//	                int dy = 0;
-//	                return move(ns,dx,dy);
-//	            }
-//	        }
-//	        throw new RuntimeException("Unknown action ind: " +actionInd );
-//	    }
-//
-//    protected List<StateTransitionProb> move(State state, int xdelta, int ydelta){
-//    	AmdpL0State ns = ((AmdpL0State)state);
-//        return Arrays.asList(new StateTransitionProb(ns, 1.));
-//    }
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 }
 

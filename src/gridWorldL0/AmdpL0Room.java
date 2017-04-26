@@ -31,7 +31,7 @@ public class AmdpL0Room implements ObjectInstance {
     }
     
     public String className() {
-        return CLASS_COORDINATE_RECTANGLE;
+        return CLASS_COORDINATE_SPACE;
     }
 
     public String name() {

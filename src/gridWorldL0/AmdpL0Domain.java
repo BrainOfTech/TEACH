@@ -40,7 +40,7 @@ public class AmdpL0Domain implements DomainGenerator {
 	public static final String VAR_Y = "y";
 	
 	public static final String CLASS_AGENT = "agent";
-	public static final String CLASS_COORDINATE_RECTANGLE = "rooms";
+	public static final String CLASS_COORDINATE_SPACE = "rooms";
 
 	public static final String ACTION_NORTH = "north";
 	public static final String ACTION_SOUTH = "south";
@@ -51,11 +51,10 @@ public class AmdpL0Domain implements DomainGenerator {
 	public static final String PF_WALL_SOUTH = "wallToSouth";
 	public static final String PF_WALL_EAST = "wallToEast";
 	public static final String PF_WALL_WEST = "wallToWest";
-    public static final String PF_AGENT_IN_COORDINATE_RECTANGLE = "in_coordinate_rectangle";
+    public static final String PF_AGENT_IN_COORDINATE_SPACE = "coordinate_space";
     
 	protected int										width;
 	protected int										height;
-	protected int										numLocationTypes = 1;
 	protected int [][]									map;
 	
 	protected RewardFunction rf;
@@ -71,7 +70,7 @@ public class AmdpL0Domain implements DomainGenerator {
 			new WallToPF(PF_WALL_SOUTH, new String[]{CLASS_AGENT}, 1),
 			new WallToPF(PF_WALL_EAST, new String[]{CLASS_AGENT}, 2),
 			new WallToPF(PF_WALL_WEST, new String[]{CLASS_AGENT}, 3),
-			new PF_InCoordinateRectangle(PF_AGENT_IN_COORDINATE_RECTANGLE, new String[]{CLASS_COORDINATE_RECTANGLE})
+			new PF_InCoordinateSpace(PF_AGENT_IN_COORDINATE_SPACE, new String[]{CLASS_COORDINATE_SPACE})
 		); //IMPORTANT PF_InCoordinateRectangle
 
 		return pfs;
@@ -87,7 +86,7 @@ public class AmdpL0Domain implements DomainGenerator {
 		}
 
 		domain.addStateClass(CLASS_AGENT, GridAgent.class);
-		domain.addStateClass(CLASS_COORDINATE_RECTANGLE, AmdpL0Room.class);
+		domain.addStateClass(CLASS_COORDINATE_SPACE, AmdpL0Room.class);
 		
 		OODomain.Helper.addPfsToDomain(domain, this.generatePfs());
 		
@@ -98,7 +97,6 @@ public class AmdpL0Domain implements DomainGenerator {
 				new UniversalActionType(ACTION_WEST));
 
 		AmdpL0Model smodel = new AmdpL0Model(this.map);
-		//AmdpL0Model smodel = new AmdpL0Model();
 		RewardFunction rf = this.rf;
 		TerminalFunction tf = this.tf;
 
@@ -116,8 +114,8 @@ public class AmdpL0Domain implements DomainGenerator {
 	
 	//PropositionalFunction will negotiate all interactions between
 	//Agent and Room state objects
-    public static class PF_InCoordinateRectangle extends PropositionalFunction {
-        public PF_InCoordinateRectangle(String name, String [] params){
+    public static class PF_InCoordinateSpace extends PropositionalFunction {
+        public PF_InCoordinateSpace(String name, String [] params){
             super(name, params);
         }
         @Override
@@ -162,28 +160,6 @@ public class AmdpL0Domain implements DomainGenerator {
         }
         return false;
     }
-	
-    
-    
-    
-    
-    
-    
-    
-    
-    
- /*NONESSENTIAL CODE
-  * 
-  * vvvvv 
-  */
-    
-    
-    
-    
-    
-    
-    
-
 
 	public class AtLocationPF extends PropositionalFunction {
 		
@@ -344,12 +320,6 @@ public class AmdpL0Domain implements DomainGenerator {
 	}
 	public int getHeight() {
 		return this.height;
-	}
-	
-	public static ValueFunctionVisualizerGUI getGridWorldValueFunctionVisualization(List <State> states, int maxX, int maxY, ValueFunction valueFunction, Policy p){
-		return ValueFunctionVisualizerGUI.createGridWorldBasedValueFunctionVisualizerGUI(states, valueFunction, p,
-				new OOVariableKey(CLASS_AGENT, VAR_X), new OOVariableKey(CLASS_AGENT, VAR_Y), new VariableDomain(0, maxX), new VariableDomain(0, maxY), 1, 1,
-				ACTION_NORTH, ACTION_SOUTH, ACTION_EAST, ACTION_WEST);
 	}
 	
 	public static int [] movementDirectionFromIndex(int i){

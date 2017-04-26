@@ -24,22 +24,6 @@ public class AmdpL1State  implements MutableOOState {
         this.rooms = rooms;
     }
 
-    public MutableOOState addObject(ObjectInstance o) {
-       return null;
-    }
-
-    public MutableOOState removeObject(String objectName) {
-    	return null;
-    }
-
-    public MutableOOState renameObject(String objectName, String newName) {
-    	return null;
-    }
-
-    public int numObjects() {
-        return 1+rooms.size();
-    }
-
     public ObjectInstance object(String objectName) {
         if(objectName.equals(agent.name())){
             AmdpL1Agent nagent = agent.copy();
@@ -73,38 +57,6 @@ public class AmdpL1State  implements MutableOOState {
         throw new RuntimeException("Unknown class type " + oclass);
     }
 
-    public MutableState set(Object variableKey, Object value) {
-        OOVariableKey key = OOStateUtilities.generateKey(variableKey);
-
-        if(key.obName.equals(agent.name())){
-            if(key.obVarKey.equals(VAR_IN_ROOM)){
-                if(value instanceof String) {
-                    touchAgent().inRoom = (String) value;
-                }
-                else throw new RuntimeException("Variable value must be String for key VAR_DIR in CleanupContinuousState for Agent Direction: " + value.toString());
-            }
-            else{
-                throw new RuntimeException("Unknown variable key in Cleanup State for Agent: " + variableKey);
-            }
-            return this;
-        }
-
-        int indL = this.roomInd(key.obName);
-        if(indL != -1) {
-            if(key.obVarKey.equals(VAR_CONNECTED)){
-                if(value instanceof String) {
-                    touchRoom(indL).connectedRooms.add((String) value);
-                }
-                else throw new RuntimeException("Variable value must be String for key VAR_CONNECTED in CleanupContinuousState for Room region connectivity: " + value.toString());
-            }
-            else{
-                throw new RuntimeException("Unknown variable key in Cleanup State for Room: " + variableKey);
-            }
-            return this;
-        }
-        throw new RuntimeException("Unknown variable key " + variableKey);
-    }
-
     public List<Object> variableKeys() {
         return OOStateUtilities.flatStateKeys(this);
     }
@@ -129,6 +81,10 @@ public class AmdpL1State  implements MutableOOState {
 
     public String toString() {
         return OOStateUtilities.ooStateToString(this);
+    }
+    
+    public int numObjects() {
+        return 1+rooms.size();
     }
 
     public AmdpL1Agent touchAgent(){
@@ -158,4 +114,21 @@ public class AmdpL1State  implements MutableOOState {
         }
         return ind;
     }
+    
+    public MutableState set(Object variableKey, Object value) {
+        throw new RuntimeException("Should not execute");
+    }
+    
+    public MutableOOState addObject(ObjectInstance o) {
+    	throw new RuntimeException("Should not execute");
+     }
+
+     public MutableOOState removeObject(String objectName) {
+    	 throw new RuntimeException("Should not execute");
+     }
+
+     public MutableOOState renameObject(String objectName, String newName) {
+    	 throw new RuntimeException("Should not execute");
+     }
+
 }

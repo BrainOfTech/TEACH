@@ -136,7 +136,6 @@ public class AMDPAgent{
 		Policy pi = PolicyGenerators.get(level).generatePolicy(s, gt);
 		if(level !=0){
 
-			System.out.print(!gt.terminalFunction().isTerminal(s));
 			while(!gt.terminalFunction().isTerminal(s) && (stepCount < maxSteps || maxSteps == -1)){
 				TaskNode[] childTaskNodes = ((NonPrimitiveTaskNode)gt.t).childTaskNodes;
 //					List<GroundedTask> childGroundedTaskList = gt.t.getApplicableGroundedTasks(s);
@@ -170,7 +169,6 @@ public class AMDPAgent{
 			}
 		}
 		else{
-			System.out.print(!gt.terminalFunction().isTerminal(s));
 			while((!env.isInTerminalState() && !gt.terminalFunction().isTerminal(s) )&& (stepCount < maxSteps || maxSteps == -1)){
 				// this is a grounded action at the base level
 				Action ga = pi.action(s);

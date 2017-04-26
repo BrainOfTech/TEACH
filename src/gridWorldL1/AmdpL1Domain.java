@@ -34,6 +34,7 @@ import burlap.statehashing.HashableStateFactory;
 import burlap.statehashing.simple.SimpleHashableStateFactory;
 import gridAmdpFramework.GroundedPropSC;
 import gridWorldAmdp.AmdpStateMapper;
+import gridWorldAmdp.GridWorldVisualizer;
 import gridWorldL0.AmdpL0Agent;
 import gridWorldL0.AmdpL0Domain;
 import gridWorldL0.AmdpL0Room;
@@ -130,26 +131,11 @@ public class AmdpL1Domain implements DomainGenerator{
             return false;
         }
     }
-    
-    public static class InRegionSC implements StateConditionTest {
-
-        public String srcOb;
-        public String targetOb;
-
-        public InRegionSC(String srcOb, String targetOb) {
-            this.srcOb = srcOb;
-            this.targetOb = targetOb;
-        }
-
-        public boolean satisfies(State s) {
-            ObjectInstance src = ((AmdpL1State)s).object(this.srcOb);
-            return src.get(VAR_IN_ROOM).equals(targetOb);
-        }
         
         public static void main(String[] args) {
 
         	//L0
-        	PropositionalFunction pfL0 = new PF_InCoordinateRectangle(PF_AGENT_IN_COORDINATE_RECTANGLE, new String[]{CLASS_COORDINATE_RECTANGLE});
+        	PropositionalFunction pfL0 = new PF_InCoordinateSpace(PF_AGENT_IN_COORDINATE_SPACE, new String[]{CLASS_COORDINATE_SPACE});
         	GroundedProp gpL0 =  new GroundedProp(pfL0,new String[]{"room1"}); //Ground generic proposition to goal
 
         	GroundedPropSC L0sc = new GroundedPropSC(gpL0);
@@ -169,7 +155,7 @@ public class AmdpL1Domain implements DomainGenerator{
 
     		OOSADomain domainL0 = gw.generateDomain(); // generate the grid world domain
     		domainL0.addPropFunction(pfL0); //IMPORTANT
-    		domainL0.addStateClass(CLASS_COORDINATE_RECTANGLE, AmdpL0Room.class); //Not sure what this does...
+    		domainL0.addStateClass(CLASS_COORDINATE_SPACE, AmdpL0Room.class);
 
     		//Create States
     		//L0: room object (room assignment numbered top-left proceeding counterclockwise) 
@@ -178,16 +164,10 @@ public class AmdpL1Domain implements DomainGenerator{
     		AmdpL0Room r3L0 = new AmdpL0Room("room3", 4, 0, 0, 4, 5, 1);
     		AmdpL0Room r4L0 = new AmdpL0Room("room4", 3, 6, 0, 10, 8, 4);
     		List<AmdpL0Room> L0_rooms = new ArrayList<AmdpL0Room>(Arrays.asList(r1L0, r2L0, r3L0, r4L0));
-//    		List<GridLocation> locations = new ArrayList<GridLocation>(); 
-//    		locations.add(new GridLocation(10,10,"yes"));
     		
-    		//L0 State-->Starting location(GridAgent), Rooms(AmdpL0Room), Ending Location(GridLocation)
+    		//L0 State-->Starting location(GridAgent), Rooms(AmdpL0Room)
     		AmdpL0State L0_state = new AmdpL0State(new AmdpL0Agent(0,0, "agent"), L0_rooms);
 
-//            StateConditionTest sc = new InRegionSC("block0", "room1");
-//            RewardFunction rf = new GoalBasedRF(sc, 1.);
-//            TerminalFunction tf = new GoalConditionTF(sc);
-            
     		//L1
     		AmdpL1Domain rw = new AmdpL1Domain(L1rf, L1tf);
     	
@@ -239,22 +219,14 @@ public class AmdpL1Domain implements DomainGenerator{
   
       		List<State> allStates = StateReachability.getReachableStates(
     			L0_state, domainL0, hashingFactory);
-    		ValueFunctionVisualizerGUI gui = AmdpL0Domain.getGridWorldValueFunctionVisualization(
+    		ValueFunctionVisualizerGUI gui = GridWorldVisualizer.getGridWorldValueFunctionVisualization(
     			allStates, 11, 11, (ValueFunction)planner, p);
     		gui.initGUI();
         	
         	System.out.println(outputPath);
         }
         
-    	public void simpleValueFunctionVis(ValueFunction valueFunction, Policy p){
 
-
-    	}
-
-            
-            
-            
-            
 //            if(false) {
 //
 //
@@ -286,15 +258,6 @@ public class AmdpL1Domain implements DomainGenerator{
 //                System.out.println(ea.actionString("\n"));
 //
 //            }
-
-        
-        
-        
-        
-        
-        
-        
-        
-        
+   
     }
-}
+

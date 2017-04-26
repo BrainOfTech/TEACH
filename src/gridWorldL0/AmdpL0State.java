@@ -59,7 +59,7 @@ public class AmdpL0State implements MutableOOState {
         if(oclass.equals(AmdpL0Domain.CLASS_AGENT)){
             return Arrays.<ObjectInstance>asList(agent);
         }
-        else if (oclass.equals(AmdpL0Domain.CLASS_COORDINATE_RECTANGLE)){
+        else if (oclass.equals(AmdpL0Domain.CLASS_COORDINATE_SPACE)){
             return new ArrayList<ObjectInstance>(rooms);
         }
         throw new RuntimeException("Unknown class type " + oclass);
