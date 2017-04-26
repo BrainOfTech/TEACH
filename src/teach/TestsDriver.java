@@ -2,6 +2,7 @@ package teach;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import burlap.behavior.functionapproximation.dense.DenseStateFeatures;
@@ -65,7 +66,7 @@ public class TestsDriver {
 		Classifier class4 = trainClassifierFromLabelsOnly(training4, attributes);
 		
 		// Test:
-		for(int y = 0; y<=10; y++){
+		for(int y = 10; y>=0; y--){
 			for(int x = 0; x <= 10; x++){
 				Instance testInference = new DenseInstance(attributes.size());
 				testInference.setValue((Attribute) attributes.get(0), x);
@@ -94,6 +95,12 @@ public class TestsDriver {
 		}
 		
 		//TODO: RHIRL
+		Episode[] episodes12 = filterEpisodes(Traj_array, 1, 2);
+		//1-2; 2-1
+		runIRL(episodes12);
+		//2-3; 3-2
+		//3-4; 4-3
+		//4-1; 1-4
 		
 	}//End Main
 		
@@ -158,6 +165,21 @@ public class TestsDriver {
 		System.out.println("Trained Classifier.");
 		
 		return stateIdentifier;
+	}
+	
+	public static Episode[] filterEpisodes(Trajectory[] trajs, int label1, int label2){
+		LinkedList<Episode> episodes = new LinkedList<Episode>();
+		for(int i = 0; i < trajs.length; i++){
+			if (trajs[i].start == label1 && trajs[i].end == label2){
+				episodes.add(trajs[i].e);
+			}
+		}
+		return episodes.toArray(new Episode[0]);
+	}
+	
+	public static void runIRL(Episode[] episodes) {
+		
+		System.out.println("TODO: Fill in actual method");
 	}
 	
 	public static int argmax(double[] elems) {

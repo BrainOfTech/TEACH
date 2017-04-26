@@ -1,4 +1,4 @@
-package teach;
+package tutorialDemos;
 
 import burlap.behavior.functionapproximation.dense.DenseStateFeatures;
 import burlap.behavior.policy.GreedyQPolicy;
