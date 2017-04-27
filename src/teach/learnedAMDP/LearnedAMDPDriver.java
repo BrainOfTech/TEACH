@@ -1,4 +1,4 @@
-package learnedAMDP;
+package teach.learnedAMDP;
 
 import static gridWorldL0.AmdpL0Domain.CLASS_COORDINATE_SPACE;
 import static gridWorldL0.AmdpL0Domain.PF_AGENT_IN_COORDINATE_SPACE;
@@ -12,9 +12,10 @@ public class LearnedAMDPDriver {
 	//	Prop Functions in AMDP model
 	//	PolicyGenerator
 	//  Defining L1 Actions should be just like the hand-made version?
+	//  Learning: Prop Functions for In-Room, Expected Reward (predictive function?) for Transition, abstract action policies...
 	
 	public static void main(String[] args){
-		DPrint.toggleCode(3214986, true);//Sets Burlap output
+		DPrint.toggleCode(3214986, true);//Sets Burlap output for something...
 		
 		//TODO: Prop Functions (implemented as a class in the AMDP classes)
 		//		Used here for termination conditions

@@ -37,7 +37,7 @@ import weka.core.Instances;
 public class TestsDriver {
 	// The primary purpose of this class is to hold the main method and run
 	// the helper tests in the following methods.
-	public static void main(String[] args) {
+	public static void formerMain(String[] args) {
 		final String file_directory = System.getProperty("user.dir") + "/trajectory";
 
 		Trajectory[] Traj_array = generateTrajectories(file_directory);
