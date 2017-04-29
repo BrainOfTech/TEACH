@@ -18,6 +18,7 @@ import burlap.mdp.core.TerminalFunction;
 import burlap.mdp.core.action.ActionType;
 import burlap.mdp.core.oo.propositional.GroundedProp;
 import burlap.visualizer.Visualizer;
+import experiments.Data;
 import burlap.mdp.core.oo.propositional.PropositionalFunction;
 import burlap.mdp.core.oo.state.ObjectInstance;
 import burlap.mdp.core.state.State;
@@ -60,27 +61,24 @@ import java.util.Map;
 import amdp.cleanup.PullCostGoalRF;
 
 public class AmdpDriver {
-    static protected MutableGlobalInteger bellmanBudget = new MutableGlobalInteger(-1);
-    static protected MutableGlobalInteger bellmanBudgetL0 = new MutableGlobalInteger(-1);
-    static protected MutableGlobalInteger bellmanBudgetL1 = new MutableGlobalInteger(-1);
-
-    //static double L1Ratio = 0.65; //not sure why this value
-    //static double L0Ratio = 0.3; //THESE LINES DO NOT SEEM TO DO ANYTHING.
-
     static int maxTrajectoryLength = 1000;
+	static String agent_name = "agent";
+   
+    public AmdpDriver(){}
 
-    public static List<BoundedRTDPForTests> brtdpList= new ArrayList<BoundedRTDPForTests>();
-    public static Map<String, BoundedRTDPForTests> brtdpMap =  new HashMap<String, BoundedRTDPForTests>();
-
-	public static void main(String[] args) {
-		DPrint.toggleCode(3214986, true);
-		
-		//Create Identifiers
-		String agent_name = "agent";
-		int[] start_location = {10,10};
-		String goal_location = "room3";
-		
-		
+	//public static void main(String[] args) {
+    public static Data executeAmdp(Boolean experiment, int[] sl, String gl){
+    	if (!experiment){
+    		DPrint.toggleCode(3214986, true);
+    	}
+    	else {
+    		DPrint.toggleUniversal(false);
+    	}
+	
+		//Create Definable Parameters
+		int[] start_location = sl; //{0,10};
+		String goal_location = gl; //"room1";
+	
 		//Create Termination/Reward Functions via the propositional function
 		//L0
 		PropositionalFunction pfL0 = new PF_InCoordinateSpace(PF_AGENT_IN_COORDINATE_SPACE, new String[]{CLASS_COORDINATE_SPACE});
@@ -148,44 +146,59 @@ public class AmdpDriver {
         AMDPAgent agent = new AMDPAgent(L1Root.getApplicableGroundedTasks(L1_state).get(0),pgList);
         SimulatedEnvironment env = new SimulatedEnvironment(gw.generateDomain(), L0_state);
         
-       
-        //Timing and performance data
-        System.out.println("start location: " + goal_location);
-        
         long startTime = System.currentTimeMillis();
         Episode e = agent.actUntilTermination(env, maxTrajectoryLength);
         long endTime = System.currentTimeMillis();
-
-        System.out.println("==========================================================\n"
-        		+ "==========================OUTPUT==========================\n"
-        		+ "==========================================================");
-        System.out.println("Action Sequence Size: \n" + e.actionSequence.size());
-        System.out.println("Action Sequence: \n" + e.actionSequence);
-        System.out.println("Reward Sequence Size: \n" + e.rewardSequence.size());
-        System.out.println("Reward Sequence: \n" + e.rewardSequence);
-        System.out.println("Total Discounted Reward: \n" + e.discountedReturn(1.));
-//        System.out.println("State Sequence Size: \n" + e.stateSequence.size());
-//        System.out.println("State Sequence: \n" + e.stateSequence);
-
-		Visualizer v = GridWorldVisualizer.getVisualizer(gw.getMap(), goal_location, L0_state);
-		new EpisodeSequenceVisualizer(v, domainL0, Arrays.asList(e));
-
-        int count=0;
-        for(int i=0;i<brtdpList.size();i++) {
-            int numUpdates = brtdpList.get(i).getNumberOfBellmanUpdates();
-            count += numUpdates;
+        
+        if (!experiment){
+            //Timing and performance data
+            System.out.println("Start Location of Agent : " + 
+            		String.valueOf(start_location[0]) + "," +
+            		String.valueOf(start_location[1]));
+            System.out.println("Goal Location: " + goal_location);
+            System.out.println("/////////////////////////////");
+        	
+	        System.out.println("==========================================================\n"
+	        		+ "==========================OUTPUT==========================\n"
+	        		+ "==========================================================");
+	        System.out.println("Action Sequence Size: \n" + e.actionSequence.size());
+	        System.out.println("Action Sequence: \n" + e.actionSequence);
+	        System.out.println("Reward Sequence Size: \n" + e.rewardSequence.size());
+	        System.out.println("Reward Sequence: \n" + e.rewardSequence);
+	        System.out.println("Total Discounted Reward: \n" + e.discountedReturn(1.));
+	//        System.out.println("State Sequence Size: \n" + e.stateSequence.size());
+	//        System.out.println("State Sequence: \n" + e.stateSequence);
+	
+	        //Visualization
+			Visualizer v = GridWorldVisualizer.getVisualizer(gw.getMap(), goal_location, L0_state);
+			new EpisodeSequenceVisualizer(v, domainL0, Arrays.asList(e));
+			
+	        HashableStateFactory hashingFactory = new SimpleHashableStateFactory();
+	    	Planner planner = new ValueIteration(domainL0, 0.99, hashingFactory, 0.001, 100);
+	    	Policy p = planner.planFromState(L0_state);	
+	  		List<State> allStates = StateReachability.getReachableStates(L0_state, domainL0, hashingFactory);
+			ValueFunctionVisualizerGUI gui = GridWorldVisualizer.getGridWorldValueFunctionVisualization(
+				allStates, 11, 11, (ValueFunction)planner, p);
+			gui.initGUI();
+			
+//	    	Planner planner2 = new ValueIteration(domainL1, 0.99, hashingFactory, 0.001, 100);
+//	    	Policy p2 = planner.planFromState(L1_state);
+//	    	List<State> allStates2 = StateReachability.getReachableStates(L1_state, domainL1, hashingFactory);
+//	    	ValueFunctionVisualizerGUI gui2 = GridWorldVisualizer.getGridWorldValueFunctionVisualization(
+//	    			allStates2, 2, 2, (ValueFunction)planner2, p2);
+//	    	gui2.initGUI();
+	    	
+			
+			
+	        System.out.println("Duration of Time: \n" + String.valueOf(endTime - startTime));
+	        System.out.println("Program End!");
         }
-        System.out.println("Duration of Time: \n" + String.valueOf(endTime - startTime));
-        System.out.println("Number of Bellman Updates: \n" + count);
-        System.out.println("Total planners used: \n" + brtdpList.size());
-        System.out.println("Backups by individual planners: ");
-        for(BoundedRTDPForTests b: brtdpList){
-            System.out.println(b.getNumberOfBellmanUpdates());
-        }
-//        System.out.println("backups: " + totalBudget);
-
+        
+        Data d = new Data(e, endTime-startTime);
+        return d;
 	}
 	
+    
     public static class l0PolicyGenerator implements AMDPPolicyGenerator{
         private OOSADomain l0;
         protected double discount = 0.99;
@@ -195,51 +208,28 @@ public class AmdpDriver {
 
         @Override
         public Policy generatePolicy(State s, GroundedTask gt) {
-
-
             l0 = ((NonPrimitiveTaskNode)gt.getT()).domain();
             l0.setModel(new FactoredModel(((FactoredModel)l0.getModel()).getStateModel(),gt.rewardFunction(), gt.terminalFunction()));
-
-            BoundedRTDPForTests brtd = new BoundedRTDPForTests(l0, this.discount,
-                    new SimpleHashableStateFactory(false),
-                    new ConstantValueFunction(0.), new ConstantValueFunction(1.0), 0.1, 50);
-            brtd.setRemainingNumberOfBellmanUpdates(bellmanBudgetL0);
-            brtd.setMaxRolloutDepth(50);
-            brtd.toggleDebugPrinting(true);
-            brtdpList.add(brtd);
-            brtd.planFromState(s);
             
-            return new GreedyReplan(brtd);
-            
-            
-//            HashableStateFactory hashingFactory = new SimpleHashableStateFactory();
-//            String outputPath = "";
-//        	Planner planner = new ValueIteration(l0, 0.99, hashingFactory, 0.001, 100);
-//        	Policy p = planner.planFromState(s);
-//        	PolicyUtils.rollout(p, s, l0.getModel()).write(outputPath + "vi");
-//        	
-//      		List<State> allStates = StateReachability.getReachableStates(
-//    			s, l0, hashingFactory);
-//    		ValueFunctionVisualizerGUI gui = AmdpL0Domain.getGridWorldValueFunctionVisualization(
-//    			allStates, 11, 11, (ValueFunction)planner, p);
-//    		gui.initGUI();
-            
+	        HashableStateFactory hashingFactory = new SimpleHashableStateFactory();
+	      	Planner planner = new ValueIteration(l0, 0.99, hashingFactory, 0.001, 100);
+	      	Policy p = planner.planFromState(s);
+	      	
+            return p;    
         }
-
         public State generateAbstractState(State s) {
         	return null;
         }
-
         @Override
         public QProvider getQProvider(State s, GroundedTask gt) {
         	throw new RuntimeException("No QProvider");
         }
     }
     
+    
     public static class l1PolicyGenerator implements AMDPPolicyGenerator{
         private OOSADomain l1;
         protected double discount = 0.99;
-
         protected StateMapping sm ;
 
         public l1PolicyGenerator(OOSADomain l1In){
@@ -248,32 +238,19 @@ public class AmdpDriver {
         }
         @Override
         public Policy generatePolicy(State s, GroundedTask gt) {
-
             l1 = ((NonPrimitiveTaskNode)gt.getT()).domain();
             l1.setModel(new FactoredModel(((FactoredModel)l1.getModel()).getStateModel(),gt.rewardFunction(), gt.terminalFunction()));
+            
+	        HashableStateFactory hashingFactory = new SimpleHashableStateFactory();
+	      	Planner planner = new ValueIteration(l1, 0.99, hashingFactory, 0.001, 100);
+	      	Policy p = planner.planFromState(s);
 
-
-            SimpleHashableStateFactory shf = new SimpleHashableStateFactory(false);
-            BoundedRTDPForTests brtdp = new BoundedRTDPForTests(l1, discount, shf,
-                    new ConstantValueFunction(0.),
-                    new ConstantValueFunction(1.),
-                    0.1,
-                    100);
-
-            brtdp.setRemainingNumberOfBellmanUpdates(bellmanBudgetL1);
-            brtdp.setMaxRolloutDepth(50);
-            brtdp.toggleDebugPrinting(true);
-
-         //   Policy p = brtdp.planFromState(s);
-            brtdpList.add(brtdp);
-            return new GreedyReplan(brtdp);
+            return p;
         }
-
         @Override
         public State generateAbstractState(State s) {
             return sm.mapState(s);
         }
-
         @Override
         public QProvider getQProvider(State s, GroundedTask gt) {
         	throw new RuntimeException("No QProvider");

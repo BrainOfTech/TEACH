@@ -140,8 +140,8 @@ public class AMDPAgent{
 				TaskNode[] childTaskNodes = ((NonPrimitiveTaskNode)gt.t).childTaskNodes;
 //					List<GroundedTask> childGroundedTaskList = gt.t.getApplicableGroundedTasks(s);
 				addTasksToMap(childTaskNodes, s, level);
-				
 				Action a = pi.action(s);
+				
 				String str = StringUtils.repeat("	", maxLevel - level);
 				str = str + a.toString();
 				DPrint.cl(debugCode , str);
