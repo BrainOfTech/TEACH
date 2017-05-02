@@ -15,7 +15,7 @@ import gridWorldAmdp.AmdpDriver;
 public class LearnedGridExperimentDriver {
 	
 	public static void main(String[] args) {
-		int iterations = 1; //set value
+		int iterations = 10; //set value
 		int step_size = 1; //prints out reassuring experiment message every step_size;
 		Boolean experiment = true; //true will suppress all graph visualizations 
 
@@ -72,7 +72,7 @@ public class LearnedGridExperimentDriver {
 			System.out.println("---------------");
 			Data d_AMDP =  AmdpDriver.executeAmdp(experiment, start, goal);
 			System.out.println("---------------");
-			Data d_LAMDP = LearnedAMDPDriverDebug.executeAmdp(experiment, start, goal);
+			Data d_LAMDP = LearnedAMDPDriver.executeAmdp(experiment, start, goal);
 			System.out.println("---------------");
 			collectedDataVI.add(d_VI);
 			collectedDataAMDP.add(d_AMDP);

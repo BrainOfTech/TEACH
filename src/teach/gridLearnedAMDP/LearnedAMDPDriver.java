@@ -159,6 +159,10 @@ public class LearnedAMDPDriver {
 		AmdpL0Room r2L0 = new AmdpL0Room("room2", 10, 0, 6, 4, 1, 5);
 		AmdpL0Room r3L0 = new AmdpL0Room("room3", 4, 0, 0, 4, 5, 1);
 		AmdpL0Room r4L0 = new AmdpL0Room("room4", 3, 6, 0, 10, 8, 4);
+//		AmdpL0Room r1L0 = new AmdpL0Room("room1", 20, 0, 5, 10, 1, 5); //TODO: Remove. Trying to break with bad classifiers.
+//		AmdpL0Room r2L0 = new AmdpL0Room("room2", 10, 0, 6, 4, 5, 8);
+//		AmdpL0Room r3L0 = new AmdpL0Room("room3", 4, 0, 0, 4, 5, 1);
+//		AmdpL0Room r4L0 = new AmdpL0Room("room4", 3, 6, 0, 10, 8, 4);
 		List<AmdpL0Room> L0_rooms = new ArrayList<AmdpL0Room>(Arrays.asList(r1L0, r2L0, r3L0, r4L0));
 		
 		//L0 State-->Starting location(GridAgent), Rooms(AmdpL0Room), Ending Location(GridLocation)

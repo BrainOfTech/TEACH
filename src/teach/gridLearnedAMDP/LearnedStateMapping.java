@@ -11,6 +11,7 @@ import burlap.mdp.auxiliary.StateMapping;
 import burlap.mdp.core.oo.state.MutableOOState;
 import burlap.mdp.core.oo.state.ObjectInstance;
 import burlap.mdp.core.state.State;
+import gridWorldAmdp.AmdpStateMapper;
 import gridWorldL0.AmdpL0Agent;
 import gridWorldL0.AmdpL0Room;
 import gridWorldL0.AmdpL0State;
@@ -160,6 +161,8 @@ public class LearnedStateMapping implements StateMapping{
 	 */
 	@Override
 	public State mapState(State s) {
+//		//TODO: To Switch Back
+//		return (new AmdpStateMapper()).mapState(s);
 		//Typecast input
 		AmdpL0State a0s = (AmdpL0State) s;
 		
@@ -180,7 +183,7 @@ public class LearnedStateMapping implements StateMapping{
 		}
 		
 		int roomNumber = argmax(fDistribution) + 1;
-		String roomName = "room" + roomNumber;
+		String roomName = "room" + roomNumber;//TODO: This is the issue.
 		//System.out.println("Debugging: Ground to room " + roomName + ", X: " + a0s.agent.x + " Y: " + a0s.agent.y);
 		
 		//Construct L1 State
@@ -196,8 +199,10 @@ public class LearnedStateMapping implements StateMapping{
 		List<AmdpL1Room> L2_rooms = new ArrayList<AmdpL1Room>(Arrays.asList(r1L1, r2L1, r3L1, r4L1));
 
 		// Construct L1 agent object
-		AmdpL1Agent L1_agent = new AmdpL1Agent(a0s.agent.name(), roomName);
-
+		//AmdpL1Agent L1_agent = new AmdpL1Agent(a0s.agent.name(), roomName);
+		String roomTest = "room" + (int)(Math.random()*4 + 1);
+		AmdpL1Agent L1_agent = new AmdpL1Agent(a0s.agent.name(), roomTest);
+		
 		// Construct L1 state
 		return new AmdpL1State(L1_agent, L2_rooms);
 	}
@@ -244,8 +249,14 @@ public class LearnedStateMapping implements StateMapping{
 				
 				//L0 State-->Starting location(GridAgent), Rooms(AmdpL0Room), Ending Location(GridLocation)
 				AmdpL0State L0_state = new AmdpL0State(new AmdpL0Agent(x,y, "agent"), L0_rooms);
-				AmdpL1State L1_State = (AmdpL1State)lsm.mapState(L0_state);
-				System.out.print(L1_State.agent.inRoom.charAt(4) + " ");
+				
+				AmdpL1State L1_State;
+				try {
+					L1_State = (AmdpL1State)lsm.mapState(L0_state);
+					System.out.print(L1_State.agent.inRoom.charAt(4) + " ");
+				} catch (Exception e) {
+					System.out.print("  ");
+				}
 			}
 			System.out.println("");
 		}
