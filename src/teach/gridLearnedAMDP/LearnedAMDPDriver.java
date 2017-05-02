@@ -120,36 +120,19 @@ public class LearnedAMDPDriver {
 		System.out.println("Parsing complete. Num traj's: " + traj_array.length);
 		lsm = LearnedStateMapping.buildMapping(traj_array);
 		
-		class InRoomPropFunc extends PropositionalFunction{//TODO: Define Prop Function based on grounding?
-			String goalLoc;
-			LearnedStateMapping lsm;
-			
-			public InRoomPropFunc(String goal, LearnedStateMapping lsm) {
-				super(null, null, new String[]{goal});
-				//Assumes the first (and only parameter) is the goal location.
-				goalLoc = goal;
-				this.lsm = lsm;
-			}
-
-			@Override
-			public boolean isTrue(OOState s, String... params) {
-				return ((AmdpL1State)lsm.mapState(s)).agent.inRoom.equals( goalLoc );
-			}
-			
-		}
 		//Create Termination/Reward Functions via the propositional function
 		//L0
-//		PropositionalFunction pfL0 = new InRoomPropFunc(goal_location, lsm);
-//		GroundedProp gpL0 = new GroundedProp(pfL0, null);
-//		GroundedPropSC L0sc = new GroundedPropSC(gpL0);
-//		GoalBasedRF L0rf = new GoalBasedRF(L0sc, 1, -1);
-//		GoalConditionTF L0tf = new GoalConditionTF(L0sc);
-		PropositionalFunction pfL0 = new PF_InCoordinateSpace(PF_AGENT_IN_COORDINATE_SPACE, new String[]{CLASS_COORDINATE_SPACE});
-		GroundedProp gpL0 =  new GroundedProp(pfL0,new String[]{goal_location}); //Ground generic proposition to goal
-		
-	    GroundedPropSC L0sc = new GroundedPropSC(gpL0);
-	    GoalBasedRF L0rf = new GoalBasedRF(L0sc, 1, -1);
-	    GoalConditionTF L0tf = new GoalConditionTF(L0sc);
+		PropositionalFunction pfL0 = new InRoomPropFunc(goal_location, lsm);
+		GroundedProp gpL0 = new GroundedProp(pfL0, null);
+		GroundedPropSC L0sc = new GroundedPropSC(gpL0);
+		GoalBasedRF L0rf = new GoalBasedRF(L0sc, 1, -1);
+		GoalConditionTF L0tf = new GoalConditionTF(L0sc);
+//		PropositionalFunction pfL0 = new PF_InCoordinateSpace(PF_AGENT_IN_COORDINATE_SPACE, new String[]{CLASS_COORDINATE_SPACE});
+//		GroundedProp gpL0 =  new GroundedProp(pfL0,new String[]{goal_location}); //Ground generic proposition to goal
+//		
+//	    GroundedPropSC L0sc = new GroundedPropSC(gpL0);
+//	    GoalBasedRF L0rf = new GoalBasedRF(L0sc, 1, -1);
+//	    GoalConditionTF L0tf = new GoalConditionTF(L0sc);
 	    
 	    //L1
 	    PropositionalFunction pfL1 = new PF_InRoom(PF_AGENT_IN_ROOM, new String[]{CLASS_ROOM});
@@ -200,7 +183,7 @@ public class LearnedAMDPDriver {
         TaskNode wt = new L0TaskNode(west);
         TaskNode[] L1Subtasks = new TaskNode[]{nt, et, st, wt};
 
-        TaskNode a2rt = new L1TaskNode(aget_to_room, gw.generateDomain(), L1Subtasks);
+        TaskNode a2rt = new LearnedL1TaskNode(aget_to_room, gw.generateDomain(), L1Subtasks, lsm);
         TaskNode L1Root = new RootTaskNode("root",new TaskNode[]{a2rt},domainL1, L1tf,L1rf);//TODO:check for looping error?
 
         List<AMDPPolicyGenerator> pgList = new ArrayList<AMDPPolicyGenerator>();

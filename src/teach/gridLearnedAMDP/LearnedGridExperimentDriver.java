@@ -72,7 +72,7 @@ public class LearnedGridExperimentDriver {
 			System.out.println("---------------");
 			Data d_AMDP =  AmdpDriver.executeAmdp(experiment, start, goal);
 			System.out.println("---------------");
-			Data d_LAMDP = LearnedAMDPDriver.executeAmdp(experiment, start, goal);
+			Data d_LAMDP = LearnedAMDPDriverDebug.executeAmdp(experiment, start, goal);
 			System.out.println("---------------");
 			collectedDataVI.add(d_VI);
 			collectedDataAMDP.add(d_AMDP);

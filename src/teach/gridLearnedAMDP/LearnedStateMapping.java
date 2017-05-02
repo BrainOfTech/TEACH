@@ -181,7 +181,7 @@ public class LearnedStateMapping implements StateMapping{
 		
 		int roomNumber = argmax(fDistribution) + 1;
 		String roomName = "room" + roomNumber;
-		System.out.println("Debugging: Ground to room " + roomName + ", X: " + a0s.agent.x + " Y: " + a0s.agent.y);
+		//System.out.println("Debugging: Ground to room " + roomName + ", X: " + a0s.agent.x + " Y: " + a0s.agent.y);
 		
 		//Construct L1 State
 		//TODO: Construct connections from data or remove.
