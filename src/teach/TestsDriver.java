@@ -26,8 +26,10 @@ import burlap.mdp.core.oo.propositional.PropositionalFunction;
 import burlap.mdp.core.oo.state.OOState;
 import burlap.mdp.core.state.State;
 import burlap.statehashing.simple.SimpleHashableStateFactory;
+import teach.gridLearnedAMDP.LearnedStateMapping;
 import weka.classifiers.Classifier;
 import weka.classifiers.functions.SimpleLogistic;
+import weka.classifiers.meta.LogitBoost;
 import weka.core.Attribute;
 import weka.core.DenseInstance;
 import weka.core.Instance;
@@ -37,33 +39,24 @@ import weka.core.Instances;
 public class TestsDriver {
 	// The primary purpose of this class is to hold the main method and run
 	// the helper tests in the following methods.
-	public static void formerMain(String[] args) {
+	public static void main(String[] args) {
 		final String file_directory = System.getProperty("user.dir") + "/trajectory";
 
-		Trajectory[] Traj_array = generateTrajectories(file_directory);
-		System.out.println("Execution complete. Num traj's: " + Traj_array.length);
+		Trajectory[] traj_array = generateTrajectories(file_directory);
+		System.out.println("Execution complete. Num traj's: " + traj_array.length);
 		
-		//Create Attributes Vector for Training.
-		Attribute agentX = new Attribute("agent:x");
-		Attribute agentY = new Attribute("agent:y");
-		ArrayList<String> classLabel = new ArrayList<String>(2);
-		classLabel.add("positive");
-		classLabel.add("negative");
-		Attribute classAttribute = new Attribute("class", classLabel);
-		ArrayList<Attribute> attributes = new ArrayList<Attribute>();
-		attributes.add(agentX);
-		attributes.add(agentY);
-		attributes.add(classAttribute);
+		LearnedStateMapping lsm = LearnedStateMapping.buildMapping(traj_array);
+		ArrayList<Attribute> attributes = lsm.getAttributes();
 		
 		//Defining Training Sets and Classifiers
-		Instances training1 = trainingForLabel(Traj_array, 1, attributes);
-		Classifier class1 = trainClassifierFromLabelsOnly(training1, attributes);// 1 is the upper right room
-		Instances training2 = trainingForLabel(Traj_array, 2, attributes);
-		Classifier class2 = trainClassifierFromLabelsOnly(training2, attributes);
-		Instances training3 = trainingForLabel(Traj_array, 3, attributes);
-		Classifier class3 = trainClassifierFromLabelsOnly(training3, attributes);
-		Instances training4 = trainingForLabel(Traj_array, 4, attributes);
-		Classifier class4 = trainClassifierFromLabelsOnly(training4, attributes);
+		Instances training1 = Trajectory.trainingForLabel(traj_array, 1, attributes);
+		Classifier class1 = LearnedStateMapping.trainClassifierFromLabelsOnly(training1, attributes);// 1 is the upper right room
+		Instances training2 = Trajectory.trainingForLabel(traj_array, 2, attributes);
+		Classifier class2 = LearnedStateMapping.trainClassifierFromLabelsOnly(training2, attributes);
+		Instances training3 = Trajectory.trainingForLabel(traj_array, 3, attributes);
+		Classifier class3 = LearnedStateMapping.trainClassifierFromLabelsOnly(training3, attributes);
+		Instances training4 = Trajectory.trainingForLabel(traj_array, 4, attributes);
+		Classifier class4 = LearnedStateMapping.trainClassifierFromLabelsOnly(training4, attributes);
 		
 		// Test:
 		for(int y = 10; y>=0; y--){
@@ -86,6 +79,12 @@ public class TestsDriver {
 					e.printStackTrace();
 				}
 				System.out.print(argmax(fDistribution) + 1 + " ");
+//				if(fDistribution[0]>.5){
+//					System.out.print(1 + " ");
+//				} else {
+//					System.out.print(0 + " ");
+//				}
+				
 //				for(int i = 0; i < fDistribution.length; i++){
 //					System.out.print(fDistribution[i] + " ");
 //				}
@@ -95,7 +94,7 @@ public class TestsDriver {
 		}
 		
 		//TODO: RHIRL
-		Episode[] episodes12 = filterEpisodes(Traj_array, 1, 2);
+		Episode[] episodes12 = filterEpisodes(traj_array, 1, 2);
 		//1-2; 2-1
 		runIRL(episodes12);
 		//2-3; 3-2
@@ -103,69 +102,6 @@ public class TestsDriver {
 		//4-1; 1-4
 		
 	}//End Main
-		
-	//Create Training Set for given label from trajectories
-	public static Instances trainingForLabel(Trajectory[] trajectories, int labelOfInterest, ArrayList<Attribute> attributes) {
-		// Create an empty training set
-		Instances isTrainingSet = new Instances("Rel", attributes, trajectories.length * 2);
-		// Set class index
-		isTrainingSet.setClassIndex(attributes.size() - 1);// The final
-															// attribute
-
-		// Pull out agent:x, agent:y locations for states labeled
-		// labelOfInterest
-		for (int i = 0; i < trajectories.length; i++) {
-			// Create the start instance
-			State inst = trajectories[i].getStateSequence().get(0);
-			int[] xy = getStateXY(inst);
-			Instance iExample = new DenseInstance(attributes.size());
-			iExample.setValue((Attribute) attributes.get(0), xy[0]);
-			iExample.setValue((Attribute) attributes.get(1), xy[1]);
-			if (trajectories[i].start == labelOfInterest) {
-				iExample.setValue((Attribute) attributes.get(2), "positive");
-			} else {
-				iExample.setValue((Attribute) attributes.get(2), "negative");
-			}
-			// add the instance
-			isTrainingSet.add(iExample);
-
-			// Create the other instance
-			int stateSequenceSize = trajectories[i].getStateSequence().size();
-			inst = trajectories[i].getStateSequence().get(stateSequenceSize - 1);
-			xy = getStateXY(inst);
-			iExample = new DenseInstance(attributes.size());
-			iExample.setValue((Attribute) attributes.get(0), xy[0]);
-			iExample.setValue((Attribute) attributes.get(1), xy[1]);
-			if (trajectories[i].end == labelOfInterest) {
-				iExample.setValue((Attribute) attributes.get(2), "positive");
-			} else {
-				iExample.setValue((Attribute) attributes.get(2), "negative");
-			}
-			// add the instance
-			isTrainingSet.add(iExample);
-		}
-
-		System.out.println(isTrainingSet.numInstances());
-		
-		return isTrainingSet;
-	}
-
-	// TODO: Train based on existing classifiers + labels
-	public static Classifier trainClassifierFromLabelsOnly(Instances isTrainingSet, ArrayList<Attribute> attributes) {
-		
-		// TODO: Train Classifier
-		Classifier stateIdentifier = (Classifier) new SimpleLogistic();//TODO: Gaussian Process.
-		try {
-			stateIdentifier.buildClassifier(isTrainingSet);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		System.out.println("Trained Classifier.");
-		
-		return stateIdentifier;
-	}
 	
 	public static Episode[] filterEpisodes(Trajectory[] trajs, int label1, int label2){
 		LinkedList<Episode> episodes = new LinkedList<Episode>();
@@ -198,16 +134,6 @@ public class TestsDriver {
 	// This method doesn't serve any purpose other than documentation
 	public static String getActionName(Action a) {
 		return a.actionName();
-	}
-
-	// Function may not be robust to different state formulations
-	public static int[] getStateXY(State s) {
-		List<Object> o = s.variableKeys();
-		int x = (Integer) s.get(o.get(0));
-		int y = (Integer) s.get(o.get(1));
-
-		int[] a = { x, y };
-		return a;
 	}
 
 	// Takes in directory of episode saved under annotated file names
