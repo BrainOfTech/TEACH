@@ -9,7 +9,7 @@ import burlap.mdp.core.oo.state.ObjectInstance;
 import burlap.mdp.core.state.MutableState;
 import burlap.mdp.core.state.State;
 
-
+//THIS IS A TEST COMMENT
 //TODO: THIS CLASS IS UNFINISHED AND CURRENTLY UNUSED.
 //TODO: MAKE THIS A USEFUL ABSTRACTION THAT CAN BE USED FOR ARBITRARY TASKS.
 public class AMDPState implements MutableOOState{
