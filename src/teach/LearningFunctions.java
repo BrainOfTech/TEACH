@@ -29,33 +29,38 @@ import weka.core.Instance;
 import weka.core.Instances;
 
 /**
- * Learned StateMapping is constructed with training trajectories.
- * It applies abstract labels to the state based on the learned classifications.
- * The questionably named "ObjectInstance" "agent" stores the location information.
+ * Learned StateMapping is constructed with training trajectories. It applies
+ * abstract labels to the state based on the learned classifications. The
+ * questionably named "ObjectInstance" "agent" stores the location information.
  * 
- * This Class implements a Singleton pattern to prevent redundant re-training. This is easy to change; simply edit {@link LearningFunctions#buildMapping(Trajectory[])} as needed.
+ * This Class implements a Singleton pattern to prevent redundant re-training.
+ * This is easy to change; simply edit
+ * {@link LearningFunctions#buildMapping(Trajectory[])} as needed.
  * 
  * @author (S)am
  *
  */
-//TODO: Add relearning based on additional trajectories.
-//TODO: Add relearning based on unsupervised exploration.
-public class LearningFunctions{
+// TODO: Add relearning based on additional trajectories.
+// TODO: Add relearning based on unsupervised exploration.
+public class LearningFunctions {
 	static LearningFunctions soleInstance = null;
-	
+	static int[][] learnedMap = null;
+
 	ArrayList<Attribute> attributes;
 	Trajectory[] inputData;
 	int[] labels;
 	HashMap<Integer, Classifier> classifiers;
-	
+
 	/**
 	 * Don't call this constructor directly, but instead use the factory method
 	 * {@link LearningFunctions#buildMapping(Trajectory[])}
-	 * @param labeledTrajectories an array of input trajectories.
+	 * 
+	 * @param labeledTrajectories
+	 *            an array of input trajectories.
 	 */
-	private LearningFunctions(Trajectory[] labeledTrajectories){
-		//Create Attributes Vector for Training.
-		//TODO: Create from data.
+	private LearningFunctions(Trajectory[] labeledTrajectories) {
+		// Create Attributes Vector for Training.
+		// TODO: Create from data.
 		Attribute agentX = new Attribute("agent:x");
 		Attribute agentY = new Attribute("agent:y");
 		ArrayList<String> classLabel = new ArrayList<String>(2);
@@ -66,87 +71,94 @@ public class LearningFunctions{
 		attributes.add(agentX);
 		attributes.add(agentY);
 		attributes.add(classAttribute);
-		
-		//load input data
+
+		// load input data
 		inputData = labeledTrajectories;
 	}
-	
+
 	/**
 	 * Generates and Trains a LearnedStateMapping based on input trajectories.
-	 * @param labeledTrajectories an array of input trajectories.
+	 * 
+	 * @param labeledTrajectories
+	 *            an array of input trajectories.
 	 * @return a new LearnedStateMapping, properly trained.
 	 */
-	public static LearningFunctions buildMapping(Trajectory[] labeledTrajectories){
+	public static LearningFunctions buildMapping(Trajectory[] labeledTrajectories) {
 		LearningFunctions lsm;
-		if(soleInstance==null){
+		if (soleInstance == null) {
 			lsm = new LearningFunctions(labeledTrajectories);
 			lsm.train();
 		} else {
 			lsm = soleInstance;
 		}
-		
+
 		return lsm;
 	}
-	
+
 	/**
-	 * Sets the internals for performing a state mapping based on a learned classifier.
+	 * Sets the internals for performing a state mapping based on a learned
+	 * classifier.
 	 */
-	public void train(){
-		//Set the set of labels
+	public void train() {
+		// Set the set of labels
 		Set<Integer> sourceLabels = new HashSet<Integer>();
-		for(int i = 0; i < inputData.length; i++){
+		for (int i = 0; i < inputData.length; i++) {
 			sourceLabels.add(inputData[i].start);
 			sourceLabels.add(inputData[i].end);
 		}
-		Integer[] empty = {};//Used to infer type
+		Integer[] empty = {};// Used to infer type
 		Integer[] newLabels = sourceLabels.toArray(empty);
 		labels = new int[newLabels.length];
-		for(int i = 0; i < newLabels.length; i++){
+		for (int i = 0; i < newLabels.length; i++) {
 			labels[i] = newLabels[i];
 		}
-		
-		//TODO: Train a classifier for each label.
+
+		// TODO: Train a classifier for each label.
 		classifiers = new HashMap<Integer, Classifier>();
-		for (int i = 0; i < labels.length; i++){
+		for (int i = 0; i < labels.length; i++) {
 			Instances trainData = Trajectory.trainingForLabel(inputData, labels[i], attributes);
 			Classifier classifier = trainClassifierFromLabelsOnly(trainData, attributes);
 			classifiers.put(labels[i], classifier);
 		}
 	}
-	
+
 	/**
 	 * 
-	 * @param trainingSet 
+	 * @param trainingSet
 	 * @param attributes
 	 * @return
 	 */
 	// TODO: Train based on existing classifiers + labels
 	public static Classifier trainClassifierFromLabelsOnly(Instances trainingSet, List<Attribute> attributes) {
-		
-		//Train Classifiers
-		Classifier stateIdentifier = (Classifier) new SimpleLogistic();//new LogitBoost();//TODO: Gaussian Process.
+
+		// Train Classifiers
+		Classifier stateIdentifier = (Classifier) new SimpleLogistic();// new
+																		// LogitBoost();//TODO:
+																		// Gaussian
+																		// Process.
 		try {
 			stateIdentifier.buildClassifier(trainingSet);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		//System.out.println("Trained Classifier.");
-		
+
+		// System.out.println("Trained Classifier.");
+
 		return stateIdentifier;
 	}
-	
+
 	/**
-	 * @return the list of attributes used for training.
-	 * This may be used by other classes to reverse engineer classification.
+	 * @return the list of attributes used for training. This may be used by
+	 *         other classes to reverse engineer classification.
 	 */
-	public ArrayList<Attribute> getAttributes(){
+	public ArrayList<Attribute> getAttributes() {
 		return attributes;
 	}
-	
+
 	/**
 	 * A helper method to give the index of the most likely classification.
+	 * 
 	 * @param elems
 	 * @return
 	 */
@@ -162,36 +174,43 @@ public class LearningFunctions{
 		}
 		return bestIdx;
 	}
-	
-	public int[][] makeMap(State s, int width, int height){
-		AmdpL0State a0s = (AmdpL0State) s;
-		int[][] map = new int[width][height];
 
-		for(int x = 0; x < width; x++){
-			for(int y = 0; y < height; y++){
-				AmdpL0State L0_state = new AmdpL0State(new AmdpL0Agent(x,y, "agent"), a0s.rooms);
-				Instance test = Trajectory.instanceFromState(L0_state, attributes);
-				double[] fDistribution = {0,0,0,0};
-				try {
-					fDistribution[0] = classifiers.get(1).distributionForInstance(test)[0];
-					fDistribution[1] = classifiers.get(2).distributionForInstance(test)[0];
-					fDistribution[2] = classifiers.get(3).distributionForInstance(test)[0];
-					fDistribution[3] = classifiers.get(4).distributionForInstance(test)[0];
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+	public int[][] makeMap(State s, int width, int height) {
+		if (learnedMap==null) {
+
+			AmdpL0State a0s = (AmdpL0State) s;
+			int[][] map = new int[width][height];
+
+			for (int x = 0; x < width; x++) {
+				for (int y = 0; y < height; y++) {
+					AmdpL0State L0_state = new AmdpL0State(new AmdpL0Agent(x, y, "agent"), a0s.rooms);
+					Instance test = Trajectory.instanceFromState(L0_state, attributes);
+					double[] fDistribution = { 0, 0, 0, 0 };
+					try {
+						fDistribution[0] = classifiers.get(1).distributionForInstance(test)[0];
+						fDistribution[1] = classifiers.get(2).distributionForInstance(test)[0];
+						fDistribution[2] = classifiers.get(3).distributionForInstance(test)[0];
+						fDistribution[3] = classifiers.get(4).distributionForInstance(test)[0];
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					int roomNumber = argmax(fDistribution);
+					map[x][y] = roomNumber + 1;
 				}
-				int roomNumber = argmax(fDistribution);
-				map[x][y] = roomNumber+1;
 			}
+
+			// for (int[] x : map){
+			// for (int y : x){
+			// System.out.print(y + " ");
+			// }
+			// System.out.println();
+			// }
+			
+			learnedMap = map;
+			return map;
+		} else {
+			return learnedMap;
 		}
-		
-//		for (int[] x : map){
-//		   for (int y : x){
-//		        System.out.print(y + " ");
-//		   }
-//		   System.out.println();
-//		}
-	return map;
-}
+	}
 }

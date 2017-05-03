@@ -14,7 +14,7 @@ import teach.gridLearnedAMDP.L_AmdpDriver;
 public class ExperimentDriver {
 	
 	public static void main(String[] args) {
-		int iterations = 1000; //set value
+		int iterations = 10000; //set value
 		int step_size = Math.max(iterations/10,1); //prints out reassuring experiment message every step_size;
 		Boolean experiment = true; //true will suppress all graph visualizations 
 
