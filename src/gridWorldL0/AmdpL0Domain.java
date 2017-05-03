@@ -21,6 +21,8 @@ import burlap.mdp.singleagent.common.UniformCostRF;
 import burlap.mdp.singleagent.model.FactoredModel;
 import burlap.mdp.singleagent.model.RewardFunction;
 import burlap.mdp.singleagent.oo.OOSADomain;
+import gridWorldL1.AmdpL1State;
+import teach.gridLearnedAMDP.LearnedStateMapping;
 
 import java.util.Arrays;
 import java.util.List;
@@ -38,6 +40,7 @@ public class AmdpL0Domain implements DomainGenerator {
     public static final String VAR_DOORY = "doory";
 	public static final String VAR_X = "x";
 	public static final String VAR_Y = "y";
+	public static final String LEARNEDMAP = "learnedMap";
 	
 	public static final String CLASS_AGENT = "agent";
 	public static final String CLASS_COORDINATE_SPACE = "rooms";
@@ -80,10 +83,6 @@ public class AmdpL0Domain implements DomainGenerator {
 	public OOSADomain generateDomain() {
 
 		OOSADomain domain = new OOSADomain();
-		
-		if (this.map[5][5] != 1) {
-			throw new RuntimeException("No Map");
-		}
 
 		domain.addStateClass(CLASS_AGENT, GridAgent.class);
 		domain.addStateClass(CLASS_COORDINATE_SPACE, AmdpL0Room.class);
@@ -114,77 +113,106 @@ public class AmdpL0Domain implements DomainGenerator {
 	
 	//PropositionalFunction will negotiate all interactions between
 	//Agent and Room state objects
+//    public static class PF_InCoordinateSpace extends PropositionalFunction {
+//        public PF_InCoordinateSpace(String name, String [] params){
+//            super(name, params);
+//        }
+//        @Override
+//        public boolean isTrue(OOState s, String... params) {
+//        	//params = CLASS_COORDINATE_RECTANGLE instance e.g. "room1"
+//        	AmdpL0State working_state = (AmdpL0State)s; //cast generic to L0State
+//        	int x = working_state.agent.x;
+//        	int y = working_state.agent.y;
+//
+//            ObjectInstance room_object = working_state.object(params[0]);
+//            return regionContainsPoint(room_object, x, y);
+//        }     
+//    }
+//    
+//    public static ObjectInstance currentRoom(State s, int x, int y, String oclass){
+//    	AmdpL0State working_state = (AmdpL0State)s;
+//        List<ObjectInstance> room_objects = working_state.objectsOfClass(oclass);
+//    	
+//        for(ObjectInstance o : room_objects){
+//            if(regionContainsPoint(o, x, y)){
+//                return o;
+//            }
+//        }
+//    	return null;
+//    }
+//    
+//    public static boolean regionContainsPoint(ObjectInstance o, int x, int y){
+//        int top = (Integer)o.get(VAR_TOP);
+//        int left = (Integer)o.get(VAR_LEFT);
+//        int bottom = (Integer)o.get(VAR_BOTTOM);
+//        int right = (Integer)o.get(VAR_RIGHT);
+//        int doorx = (Integer)o.get(VAR_DOORX);
+//        int doory = (Integer)o.get(VAR_DOORY);
+//        
+//        //in designated room doorway
+//        if(x == doorx && y == doory){
+//        	return true;
+//        }
+//        //in room
+//        if(y >= bottom && y <= top && x >= left && x <= right){
+//            return true;
+//        }
+//        return false;
+//    }
+    
+    //LEARNED FUNCTIONS///////////////////////////////////////////////////////////////
+    public static ObjectInstance currentRoom(State s, int x, int y, String oclass){
+    	AmdpL0State working_state = (AmdpL0State)s;
+        List<ObjectInstance> room_objects = working_state.objectsOfClass(oclass);
+    	
+        for(ObjectInstance o : room_objects){
+            if(learnedRegionContainsPoint(o, x, y)){
+                return o;
+            }
+        }
+    	return null;
+    }
+	
     public static class PF_InCoordinateSpace extends PropositionalFunction {
         public PF_InCoordinateSpace(String name, String [] params){
             super(name, params);
         }
+        
         @Override
         public boolean isTrue(OOState s, String... params) {
         	//params = CLASS_COORDINATE_RECTANGLE instance e.g. "room1"
         	AmdpL0State working_state = (AmdpL0State)s; //cast generic to L0State
         	int x = working_state.agent.x;
         	int y = working_state.agent.y;
-
-            ObjectInstance room_object = working_state.object(params[0]);
-            return regionContainsPoint(room_object, x, y);
+        	
+        	ObjectInstance o = working_state.object(params[0]);
+        	
+        	return learnedRegionContainsPoint(o, x, y);
         }     
     }
     
-    public static ObjectInstance currentRoom(State s, int x, int y, String oclass){
-    	AmdpL0State working_state = (AmdpL0State)s;
-        List<ObjectInstance> room_objects = working_state.objectsOfClass(oclass);
-    	
-        for(ObjectInstance o : room_objects){
-            if(regionContainsPoint(o, x, y)){
-                return o;
-            }
-        }
-    	return null;
-    }
-    
-    public static boolean regionContainsPoint(ObjectInstance o, int x, int y){
-        int top = (Integer) o.get(VAR_TOP);
-        int left = (Integer)o.get(VAR_LEFT);
-        int bottom = (Integer)o.get(VAR_BOTTOM);
-        int right = (Integer)o.get(VAR_RIGHT);
-        int doorx = (Integer)o.get(VAR_DOORX);
-        int doory = (Integer)o.get(VAR_DOORY);
-        
-        //in designated room doorway
-        if(x == doorx && y == doory){
-        	return true;
-        }
-        //in room
-        if(y >= bottom && y <= top && x >= left && x <= right){
-            return true;
-        }
-        return false;
+    public static boolean learnedRegionContainsPoint(ObjectInstance o, int x, int y){
+    	int key = -1;
+    	int [][] lm = (int[][]) o.get(LEARNEDMAP);
+    	if (o.name().equals("room1")){
+    		key = 1;
+    	}
+    	else if (o.name().equals("room2")){
+    		key = 2;
+    	} 
+    	else if (o.name().equals("room3")){
+    		key = 3;
+    	} 
+    	else if (o.name().equals("room4")){
+    		key = 4;
+    	} 
+    	else {
+    		throw new RuntimeException("Mismatch for Learned Region");
+    	}
+        return key == lm[x][y];
     }
 
-	public class AtLocationPF extends PropositionalFunction {
-		
-		public AtLocationPF(String name, String[] parameterClasses) {
-			super(name, parameterClasses);
-		}
-		@Override
-		public boolean isTrue(OOState st, String... params) {
-			
-			ObjectInstance agent = st.object(params[0]);
-			ObjectInstance location = st.object(params[1]);
-			
-			int ax = (Integer)agent.get("x");
-			int ay = (Integer)agent.get("y");
-			
-			int lx = (Integer)location.get("x");
-			int ly = (Integer)location.get("y");
-			
-			if(ax == lx && ay == ly){
-				return true;
-			}	
-			return false;
-		}
-	}
-	
+    //GRIDWORLD FUNCTIONS///////////////////////////////////////////////////////////////
 	public class WallToPF extends PropositionalFunction{
 
 		protected int xdelta;

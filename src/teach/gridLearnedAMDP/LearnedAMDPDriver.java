@@ -59,49 +59,13 @@ import teach.TestsDriver;
 import teach.Trajectory;
 
 public class LearnedAMDPDriver {
-    static int maxTrajectoryLength = 1000;
+    static int maxTrajectoryLength = 100;
 	static String agent_name = "agent";
 	static LearnedStateMapping lsm;
 	
-	//Other classes with primary functionality:
-	//	Prop Functions in AMDP model
-	//	PolicyGenerator
-	//  Defining L1 Actions should be just like the hand-made version?
-	//  Learning: Prop Functions for In-Room, Expected Reward (predictive function?) for Transition, abstract action policies...
-	
-	public static void main(String[] args){
-		
-		//NOTE: THE TODO'S BELOW ARE IN GENERAL, AND IMPLEMENTED IN executeAmdp
-		
-		//TODO: Prop Functions (implemented as a class in the AMDP classes)
-		//		Used here for termination conditions
-		//PropositionalFunction pfL0 = new PF_InCoordinateSpace(PF_AGENT_IN_COORDINATE_SPACE, new String[]{CLASS_COORDINATE_SPACE});
-		// args: "name of prop function", "class names for each parameter"
-		// Derived from PropositionalFunction in BURLAP
-		//Termination conditions defined in terms of prop function
-		//Note: Prop Functions defined at each level of the AMDP...
-		
-		//Note: State is object-oriented, so Prop Functions can pull out objects from state
-		
-		//TODO: Instantiate Domains 
-		
-		//TODO: Set trained rooms
-		
-		//TODO: Set initial state and Derive L1 state from AMDPStateMapping (class defined elsewhere)
-		
-		//TODO: Task Nodes? - Probably not applicable in learned case
-		
-		//TODO: Policy Generators - One for each level. (This is where the planning gets swapped.)
-		
-		//TODO: Instantiate Agent that solves task using PolicyGenerator s
-		
-		//TODO: Instantiate Environment the agent can run on.
-		
-		//TODO: Timing and Performance Data
-		
-	}
-	
 	public static Data executeAmdp(Boolean experiment, int[] sl, String gl){
+	//public static void main(String[] args) {
+		//Boolean experiment = false;
     	if (!experiment){
     		DPrint.toggleCode(3214986, true);
     	}
@@ -110,9 +74,8 @@ public class LearnedAMDPDriver {
     	}
 	
 		//Create Definable Parameters
-		int[] start_location = sl; //{0,10};
-		String goal_location = gl; //"room1";
-	
+		int[] start_location = sl;
+		String goal_location = gl;
 		
 		//Train State Mapper
 		final String file_directory = System.getProperty("user.dir") + "/trajectory";
@@ -122,17 +85,12 @@ public class LearnedAMDPDriver {
 		
 		//Create Termination/Reward Functions via the propositional function
 		//L0
-		PropositionalFunction pfL0 = new InRoomPropFunc(goal_location, lsm);
-		GroundedProp gpL0 = new GroundedProp(pfL0, null);
-		GroundedPropSC L0sc = new GroundedPropSC(gpL0);
-		GoalBasedRF L0rf = new GoalBasedRF(L0sc, 1, -1);
-		GoalConditionTF L0tf = new GoalConditionTF(L0sc);
-//		PropositionalFunction pfL0 = new PF_InCoordinateSpace(PF_AGENT_IN_COORDINATE_SPACE, new String[]{CLASS_COORDINATE_SPACE});
-//		GroundedProp gpL0 =  new GroundedProp(pfL0,new String[]{goal_location}); //Ground generic proposition to goal
-//		
-//	    GroundedPropSC L0sc = new GroundedPropSC(gpL0);
-//	    GoalBasedRF L0rf = new GoalBasedRF(L0sc, 1, -1);
-//	    GoalConditionTF L0tf = new GoalConditionTF(L0sc);
+		PropositionalFunction pfL0 = new PF_InCoordinateSpace(PF_AGENT_IN_COORDINATE_SPACE, new String[]{CLASS_COORDINATE_SPACE});
+		GroundedProp gpL0 =  new GroundedProp(pfL0,new String[]{goal_location}); //Ground generic proposition to goal
+		
+	    GroundedPropSC L0sc = new GroundedPropSC(gpL0);
+	    GoalBasedRF L0rf = new GoalBasedRF(L0sc, 1, -1);
+	    GoalConditionTF L0tf = new GoalConditionTF(L0sc);
 	    
 	    //L1
 	    PropositionalFunction pfL1 = new PF_InRoom(PF_AGENT_IN_ROOM, new String[]{CLASS_ROOM});
@@ -141,8 +99,38 @@ public class LearnedAMDPDriver {
 	    GroundedPropSC L1sc = new GroundedPropSC(gpL1);
 	    GoalBasedRF L1rf = new GoalBasedRF(L1sc, 1, -1);
 	    GoalConditionTF L1tf = new GoalConditionTF(L1sc);
-	   
+		
+		//L0 State-->Starting location(GridAgent), Rooms(AmdpL0Room), Ending Location(GridLocation)
+		AmdpL0State temp = new AmdpL0State(new AmdpL0Agent(start_location[0],start_location[1], agent_name));
+		int [][] learnedMap = lsm.makeMap(temp, 11, 11);
+		
+		//Create States
+		//L0: room object (room assignment numbered top-left proceeding counterclockwise) 
+		int[] bounds = lsm.roomBounds(1);
+		AmdpL0Room r1L0 = new AmdpL0Room("room1", bounds[0], bounds[1], bounds[2], bounds[3], 5, 8, learnedMap);
+		bounds = lsm.roomBounds(2);
+		AmdpL0Room r2L0 = new AmdpL0Room("room2", bounds[0], bounds[1], bounds[2], bounds[3], 1, 5, learnedMap);
+		bounds = lsm.roomBounds(3);
+		AmdpL0Room r3L0 = new AmdpL0Room("room3", bounds[0], bounds[1], bounds[2], bounds[3], 5, 1, learnedMap);
+		bounds = lsm.roomBounds(4);
+		AmdpL0Room r4L0 = new AmdpL0Room("room4", bounds[0], bounds[1], bounds[2], bounds[3], 8, 4, learnedMap);
+		List<AmdpL0Room> L0_rooms = new ArrayList<AmdpL0Room>(Arrays.asList(r1L0, r2L0, r3L0, r4L0));
 	    
+//		//Create States
+//		//L0: room object (room assignment numbered top-left proceeding counterclockwise) 
+//		AmdpL0Room r1L0 = new AmdpL0Room("room1", 10, 6, 5, 10, 5, 8, learnedMap);
+//		AmdpL0Room r2L0 = new AmdpL0Room("room2", 10, 0, 6, 4, 1, 5, learnedMap);
+//		AmdpL0Room r3L0 = new AmdpL0Room("room3", 4, 0, 0, 4, 5, 1, learnedMap);
+//		AmdpL0Room r4L0 = new AmdpL0Room("room4", 3, 6, 0, 10, 8, 4, learnedMap);
+//		List<AmdpL0Room> L0_rooms = new ArrayList<AmdpL0Room>(Arrays.asList(r1L0, r2L0, r3L0, r4L0));
+//		
+		//L0 State-->Starting location(GridAgent), Rooms(AmdpL0Room), Ending Location(GridLocation)
+		AmdpL0State L0_state = new AmdpL0State(new AmdpL0Agent(start_location[0],start_location[1], agent_name), L0_rooms);
+		
+		//L1 State-->is dynamically set by State Mapping
+		//State L1_state = lsm.mapState(L0_state);
+		State L1_state = new AmdpStateMapper().mapState(L0_state);
+		
 		//Create Domains
 		//L0
 		AmdpL0Domain gw = new AmdpL0Domain(L0rf, L0tf); 
@@ -152,25 +140,6 @@ public class LearnedAMDPDriver {
 		//L1
 		AmdpL1Domain rw = new AmdpL1Domain(L1rf, L1tf);
 		OOSADomain domainL1 = rw.generateDomain();
-
-		//Create States
-		//L0: room object (room assignment numbered top-left proceeding counterclockwise) 
-		AmdpL0Room r1L0 = new AmdpL0Room("room1", 10, 6, 5, 10, 5, 8);
-		AmdpL0Room r2L0 = new AmdpL0Room("room2", 10, 0, 6, 4, 1, 5);
-		AmdpL0Room r3L0 = new AmdpL0Room("room3", 4, 0, 0, 4, 5, 1);
-		AmdpL0Room r4L0 = new AmdpL0Room("room4", 3, 6, 0, 10, 8, 4);
-//		AmdpL0Room r1L0 = new AmdpL0Room("room1", 20, 0, 5, 10, 1, 5); //TODO: Remove. Trying to break with bad classifiers.
-//		AmdpL0Room r2L0 = new AmdpL0Room("room2", 10, 0, 6, 4, 5, 8);
-//		AmdpL0Room r3L0 = new AmdpL0Room("room3", 4, 0, 0, 4, 5, 1);
-//		AmdpL0Room r4L0 = new AmdpL0Room("room4", 3, 6, 0, 10, 8, 4);
-		List<AmdpL0Room> L0_rooms = new ArrayList<AmdpL0Room>(Arrays.asList(r1L0, r2L0, r3L0, r4L0));
-		
-		//L0 State-->Starting location(GridAgent), Rooms(AmdpL0Room), Ending Location(GridLocation)
-		AmdpL0State L0_state = new AmdpL0State(new AmdpL0Agent(start_location[0],start_location[1], agent_name), L0_rooms);
-		
-		//L1 State-->is dynamically set by State Mapping
-		State L1_state = lsm.mapState(L0_state);
-		System.out.println("Initialized LearnedStateMapping.");
 		
 		//Create Action Types
         ActionType north = domainL0.getAction(AmdpL0Domain.ACTION_NORTH);
@@ -187,17 +156,15 @@ public class LearnedAMDPDriver {
         TaskNode wt = new L0TaskNode(west);
         TaskNode[] L1Subtasks = new TaskNode[]{nt, et, st, wt};
 
-        TaskNode a2rt = new LearnedL1TaskNode(aget_to_room, gw.generateDomain(), L1Subtasks, lsm);
-        TaskNode L1Root = new RootTaskNode("root",new TaskNode[]{a2rt},domainL1, L1tf,L1rf);//TODO:check for looping error?
+        TaskNode a2rt = new L1TaskNode(aget_to_room, gw.generateDomain(), L1Subtasks);
+        TaskNode L1Root = new RootTaskNode("root",new TaskNode[]{a2rt},domainL1, L1tf,L1rf);
 
         List<AMDPPolicyGenerator> pgList = new ArrayList<AMDPPolicyGenerator>();
         pgList.add(0,new l0PolicyGenerator(domainL0));
-        pgList.add(1,new l1PolicyGenerator(domainL1, lsm));
+        pgList.add(1,new l1PolicyGenerator(domainL1));
 		
         AMDPAgent agent = new AMDPAgent(L1Root.getApplicableGroundedTasks(L1_state).get(0),pgList);
         SimulatedEnvironment env = new SimulatedEnvironment(gw.generateDomain(), L0_state);
-        
-        System.out.println("Initialized LearnedAMDP experiment.");
         
         long startTime = System.currentTimeMillis();
         Episode e = agent.actUntilTermination(env, maxTrajectoryLength);
@@ -289,12 +256,6 @@ public class LearnedAMDPDriver {
             l1 = l1In;
             sm = new AmdpStateMapper();
         }
-        
-        public l1PolicyGenerator(OOSADomain l1In, StateMapping smIn){
-        	l1 = l1In;
-        	sm = smIn;
-        }
-        
         @Override
         public Policy generatePolicy(State s, GroundedTask gt) {
             l1 = ((NonPrimitiveTaskNode)gt.getT()).domain();

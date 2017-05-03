@@ -9,16 +9,18 @@ import java.util.Random;
 
 import burlap.behavior.singleagent.auxiliary.performance.LearningAlgorithmExperimenter;
 import gridWorldAmdp.AmdpDriver;
+import teach.gridLearnedAMDP.LearnedAMDPDriver;
 
 public class ExperimentDriver {
 	
 	public static void main(String[] args) {
-		int iterations = 10000; //set value
-		int step_size = 1000; //prints out reassuring experiment message every step_size;
-		Boolean experiment = true; //true will suppress all graph visualizations 
+		int iterations = 1; //set value
+		int step_size = 1; //prints out reassuring experiment message every step_size;
+		Boolean experiment = false; //true will suppress all graph visualizations 
 
 		List<Data> collectedDataVI = new ArrayList<Data>();
 		List<Data> collectedDataAMDP = new ArrayList<Data>();
+		List<Data> collectedDataLAMDP = new ArrayList<Data>();
 		
 		//Goal Locations
 		HashMap<Integer,String> gl = new HashMap<Integer,String>();
@@ -65,64 +67,87 @@ public class ExperimentDriver {
 				+ "\nGoal Location: " + goal);
 			}
 		
-			Data d_VI = ValueIterationL0.executeValueIteration(experiment, start, goal);
-			//System.out.println("---------------");
-			Data d_AMDP =  AmdpDriver.executeAmdp(experiment, start, goal);
-			collectedDataVI.add(d_VI);
-			collectedDataAMDP.add(d_AMDP);
+			Data d_LAMDP = LearnedAMDPDriver.executeAmdp(experiment, start, goal);			
+//			Data d_VI = ValueIterationL0.executeValueIteration(experiment, start, goal);
+//			Data d_AMDP =  AmdpDriver.executeAmdp(experiment, start, goal);
+			
+//			collectedDataVI.add(d_VI);
+//			collectedDataAMDP.add(d_AMDP);
+			collectedDataLAMDP.add(d_LAMDP);
 		}
-		int corpus_size = collectedDataVI.size();
+		int corpus_size = collectedDataLAMDP.size();
 		
 		//Data Results 
 		double as_VI = 0;
 		double t_VI = 0;
 		double as_AMDP = 0;
 		double t_AMDP = 0;
+		double as_LAMDP = 0;
+		double t_LAMDP = 0;
 		//Mean
 		for(int i = 0; i < corpus_size; i++){
-			Data d_vi = collectedDataVI.get(i);
-			as_VI += d_vi.action;
-			t_VI += d_vi.timing;
+//			Data d_vi = collectedDataVI.get(i);
+//			as_VI += d_vi.action;
+//			t_VI += d_vi.timing;
+//			
+//			Data d_amdp = collectedDataAMDP.get(i);
+//			as_AMDP += d_amdp.action;
+//			t_AMDP += d_amdp.timing;
 			
-			Data d_amdp = collectedDataAMDP.get(i);
-			as_AMDP += d_amdp.action;
-			t_AMDP += d_amdp.timing;
+			Data d_lamdp = collectedDataLAMDP.get(i);
+			as_LAMDP += d_lamdp.action;
+			t_LAMDP += d_lamdp.timing;
 		}
 		double mean_as_VI = as_VI/corpus_size;
 		double mean_t_VI = t_VI/corpus_size;
 		double mean_as_AMDP = as_AMDP/corpus_size;
 		double mean_t_AMDP= t_AMDP/corpus_size;
+		double mean_as_LAMDP = as_LAMDP/corpus_size;
+		double mean_t_LAMDP= t_LAMDP/corpus_size;
 		
 		//Standard Deviation
 		double sd_as_VI = 0;
 		double sd_t_VI = 0;
 		double sd_as_AMDP = 0;
 		double sd_t_AMDP = 0;
+		double sd_as_LAMDP = 0;
+		double sd_t_LAMDP = 0;
 		for(int i = 0; i < corpus_size; i++){
-			Data d_vi = collectedDataVI.get(i);
-			sd_as_VI += Math.pow(d_vi.action-mean_as_VI,2)/corpus_size;
-			sd_t_VI += Math.pow(d_vi.timing-mean_t_VI,2)/corpus_size;
+//			Data d_vi = collectedDataVI.get(i);
+//			sd_as_VI += Math.pow(d_vi.action-mean_as_VI,2)/corpus_size;
+//			sd_t_VI += Math.pow(d_vi.timing-mean_t_VI,2)/corpus_size;
+//			
+//			Data d_amdp = collectedDataAMDP.get(i);
+//			sd_as_AMDP += Math.pow(d_amdp.action-mean_as_AMDP,2)/corpus_size;
+//			sd_t_AMDP += Math.pow(d_amdp.timing-mean_t_AMDP,2)/corpus_size;
 			
-			Data d_amdp = collectedDataAMDP.get(i);
-			sd_as_AMDP += Math.pow(d_amdp.action-mean_as_AMDP,2)/corpus_size;
-			sd_t_AMDP += Math.pow(d_amdp.timing-mean_t_AMDP,2)/corpus_size;
+			Data d_lamdp = collectedDataLAMDP.get(i);
+			sd_as_LAMDP += Math.pow(d_lamdp.action-mean_as_LAMDP,2)/corpus_size;
+			sd_t_LAMDP += Math.pow(d_lamdp.timing-mean_t_LAMDP,2)/corpus_size;
 		}
 		sd_as_VI = Math.sqrt(sd_as_VI);
 		sd_t_VI = Math.sqrt(sd_t_VI);
 		sd_as_AMDP = Math.sqrt(sd_as_AMDP);
 		sd_t_AMDP = Math.sqrt(sd_t_AMDP);
+		sd_as_LAMDP = Math.sqrt(sd_as_LAMDP);
+		sd_t_LAMDP = Math.sqrt(sd_t_LAMDP);
 		
 		System.out.println("\nTotal number of iterations: " + iterations);
-		System.out.println("====Value Iteration====");
-		System.out.println("Mean Action Sequence Size: " + String.valueOf(mean_as_VI));
-		System.out.println("Standard Deviation Action Sequence Size: " + String.valueOf(sd_as_VI));
-		System.out.println("Mean Time: " + String.valueOf(mean_t_VI));
-		System.out.println("Standard Deviation Time: " + String.valueOf(sd_t_VI));
-		System.out.println("====AMDP====");
-		System.out.println("Mean Action Sequence Size: " + String.valueOf(mean_as_AMDP));
-		System.out.println("Standard Deviation Action Sequence Size: " + String.valueOf(sd_as_AMDP));
-		System.out.println("Mean Time: " + String.valueOf(mean_t_AMDP));
-		System.out.println("Standard Deviation Time: " + String.valueOf(sd_t_AMDP));
+//		System.out.println("====Value Iteration====");
+//		System.out.println("Mean Action Sequence Size: " + String.valueOf(mean_as_VI));
+//		System.out.println("Standard Deviation Action Sequence Size: " + String.valueOf(sd_as_VI));
+//		System.out.println("Mean Time: " + String.valueOf(mean_t_VI));
+//		System.out.println("Standard Deviation Time: " + String.valueOf(sd_t_VI));
+//		System.out.println("====AMDP====");
+//		System.out.println("Mean Action Sequence Size: " + String.valueOf(mean_as_AMDP));
+//		System.out.println("Standard Deviation Action Sequence Size: " + String.valueOf(sd_as_AMDP));
+//		System.out.println("Mean Time: " + String.valueOf(mean_t_AMDP));
+//		System.out.println("Standard Deviation Time: " + String.valueOf(sd_t_AMDP));
+		System.out.println("====LAMDP====");
+		System.out.println("Mean Action Sequence Size: " + String.valueOf(mean_as_LAMDP));
+		System.out.println("Standard Deviation Action Sequence Size: " + String.valueOf(sd_as_LAMDP));
+		System.out.println("Mean Time: " + String.valueOf(mean_t_LAMDP));
+		System.out.println("Standard Deviation Time: " + String.valueOf(sd_t_LAMDP));
 		
 //		System.out.println(actionSequences);
 //		System.out.println(Times);

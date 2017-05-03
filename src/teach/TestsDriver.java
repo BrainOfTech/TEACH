@@ -2,6 +2,7 @@ package teach;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -66,8 +67,8 @@ public class TestsDriver {
 				testInference.setValue((Attribute) attributes.get(1), y);
 				testInference.setDataset(training1);// Re-use data-set format.
 				// Get the likelihood of each classes
-				// fDistribution[0] is the probability of being “positive”
-				// fDistribution[1] is the probability of being “negative”
+				// fDistribution[0] is the probability of being ï¿½positiveï¿½
+				// fDistribution[1] is the probability of being ï¿½negativeï¿½
 				double[] fDistribution = {0,0,0,0};
 				try {
 					fDistribution[0] = class1.distributionForInstance(testInference)[0];
@@ -140,11 +141,13 @@ public class TestsDriver {
 	// and returns an array of Trajectories.
 	public static Trajectory[] generateTrajectories(String directoryName) {
 		File directory = new File(directoryName);
-		List<Episode> episodes = Episode.readEpisodes(directoryName);
-
 		File[] fList = directory.listFiles();
+		if (fList[0].getName().equals(".DS_Store")){
+			File[] newlist = Arrays.copyOfRange(fList, 1, fList.length);
+			fList = newlist;
+		}
+		List<Episode> episodes = Episode.readEpisodes(directoryName);
 		Trajectory[] T = new Trajectory[episodes.size()];
-
 		for (int i = 0; i < episodes.size(); i++) {
 			String[] split = fList[i].getName().split("_");
 			String start_symbol = split[1], end_symbol = split[3];

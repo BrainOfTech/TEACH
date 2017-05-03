@@ -25,7 +25,10 @@ public class AmdpL0State implements MutableOOState {
 		this.agent = agent;
 		this.rooms = rooms;
 	}
-
+	public AmdpL0State(AmdpL0Agent agent) {
+		this.agent = agent;
+	}
+	
 	@Override
 	public int numObjects() {
 		return 1 + this.rooms.size();

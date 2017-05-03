@@ -13,6 +13,7 @@ import burlap.mdp.core.oo.state.ObjectInstance;
 import burlap.mdp.core.state.State;
 import gridWorldAmdp.AmdpStateMapper;
 import gridWorldL0.AmdpL0Agent;
+import gridWorldL0.AmdpL0Domain;
 import gridWorldL0.AmdpL0Room;
 import gridWorldL0.AmdpL0State;
 import gridWorldL1.AmdpL1Agent;
@@ -154,6 +155,40 @@ public class LearnedStateMapping implements StateMapping{
 		}
 		return bestIdx;
 	}
+	
+	public int[][] makeMap(State s, int width, int height){
+		AmdpL0State a0s = (AmdpL0State) s;
+		int[][] map = new int[width][height];
+
+		for(int x = 0; x < width; x++){
+			for(int y = 0; y < height; y++){
+				AmdpL0State L0_state = new AmdpL0State(new AmdpL0Agent(x,y, "agent"), a0s.rooms);
+				Instance test = Trajectory.instanceFromState(L0_state, attributes);
+				double[] fDistribution = {0,0,0,0};
+				try {
+					fDistribution[0] = classifiers.get(1).distributionForInstance(test)[0];
+					fDistribution[1] = classifiers.get(2).distributionForInstance(test)[0];
+					fDistribution[2] = classifiers.get(3).distributionForInstance(test)[0];
+					fDistribution[3] = classifiers.get(4).distributionForInstance(test)[0];
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				int roomNumber = argmax(fDistribution);
+				map[x][y] = roomNumber+1;
+			}
+		}
+		
+//		for (int[] x : map)
+//		{
+//		   for (int y : x)
+//		   {
+//		        System.out.print(y + " ");
+//		   }
+//		   System.out.println();
+//		}
+	return map;
+}
 
 	/**
 	 * This is an intermediate method that takes an AmdpL0State and returns an AmdpL1State
@@ -166,11 +201,15 @@ public class LearnedStateMapping implements StateMapping{
 		//Typecast input
 		AmdpL0State a0s = (AmdpL0State) s;
 		
+    	AmdpL0Agent L0_agent = a0s.agent;
+        int ax = L0_agent.x;
+        int ay = L0_agent.y;
+        
+        ObjectInstance inRoom = AmdpL0Domain.currentRoom(s, ax, ay, "rooms");
+        //String roomName = inRoom.name();
+		
 		//Identify Room
 		Instance testInference = Trajectory.instanceFromState(a0s, attributes);
-		// Get the likelihood of each classes
-		// fDistribution[0] is the probability of being “positive”
-		// fDistribution[1] is the probability of being “negative”
 		double[] fDistribution = {0,0,0,0};
 		try {
 			fDistribution[0] = classifiers.get(1).distributionForInstance(testInference)[0];
@@ -184,7 +223,8 @@ public class LearnedStateMapping implements StateMapping{
 		
 		int roomNumber = argmax(fDistribution) + 1;
 		String roomName = "room" + roomNumber;//TODO: This is the issue.
-		//System.out.println("Debugging: Ground to room " + roomName + ", X: " + a0s.agent.x + " Y: " + a0s.agent.y);
+//		System.out.println("Debugging: Ground to room " + roomName2 + ", X: " + a0s.agent.x + " Y: " + a0s.agent.y);
+//		System.out.println("Testing: Ground to room " + roomName + ", X: " + ax + " Y: " + ay);
 		
 		//Construct L1 State
 		//TODO: Construct connections from data or remove.
@@ -199,66 +239,116 @@ public class LearnedStateMapping implements StateMapping{
 		List<AmdpL1Room> L2_rooms = new ArrayList<AmdpL1Room>(Arrays.asList(r1L1, r2L1, r3L1, r4L1));
 
 		// Construct L1 agent object
-		//AmdpL1Agent L1_agent = new AmdpL1Agent(a0s.agent.name(), roomName);
-		String roomTest = "room" + (int)(Math.random()*4 + 1);
-		AmdpL1Agent L1_agent = new AmdpL1Agent(a0s.agent.name(), roomTest);
+		AmdpL1Agent L1_agent = new AmdpL1Agent(a0s.agent.name(), roomName);
 		
 		// Construct L1 state
 		return new AmdpL1State(L1_agent, L2_rooms);
 	}
-	
-//	/**
-//	 * mapState assumes that State s is a MutableOOState.
-//	 * It returns a state with all abstract labels set.
-//	 * This assumes that there is an Agent StateObject with location info.
-//	 * This method applies hierarchical LearnedLabel StateObjects as applicable.
-//	 * 
-//	 */
-//	//TODO: Accommodate other state member objects.
-//	@Override
-//	public State mapState(State s) {
-//		MutableOOState moos = (MutableOOState)s;
-//		ObjectInstance agent = moos.object("agent");//TODO: alternative to hardcoding - pull "agent" from appropriate class.
-//		
-//		MutableOOState abstractState = new MutableOOState();
-//		
-//		// TODO Auto-generated method stub
-//		return null;
-//	}
 
 	/**
 	 * Shows state mapping on the 4 rooms domain. This can be used to select a sensible classifier.
 	 * @param args
 	 */
-	public static void main(String[] args){
-		final String file_directory = System.getProperty("user.dir") + "/trajectory";
-		Trajectory[] traj_array = TestsDriver.generateTrajectories(file_directory);//TODO: Refactor Loading
-		System.out.println("Parsing complete. Num traj's: " + traj_array.length);
-		LearnedStateMapping lsm = LearnedStateMapping.buildMapping(traj_array);
-		
-		//Testing classification:
-		for(int y = 10; y >= 0; y--){
-			for(int x = 0; x <= 10; x++){
+//	public static void main(String[] args){
+//		final String file_directory = System.getProperty("user.dir") + "/trajectory";
+//		Trajectory[] traj_array = TestsDriver.generateTrajectories(file_directory);//TODO: Refactor Loading
+//		System.out.println("Parsing complete. Num traj's: " + traj_array.length);
+//		LearnedStateMapping lsm = LearnedStateMapping.buildMapping(traj_array);
+//		
+//		String thisMap = "";
+//		String otherMap = "";
+//		//Testing classification:
+//		for(int y = 10; y >= 0; y--){
+//			for(int x = 0; x <= 10; x++){
+//				//Create States
+//				//L0: room object (room assignment numbered top-left proceeding counterclockwise) 
+//				AmdpL0Room r1L0 = new AmdpL0Room("room1", 10, 6, 5, 10, 5, 8);
+//				AmdpL0Room r2L0 = new AmdpL0Room("room2", 10, 0, 6, 4, 1, 5);
+//				AmdpL0Room r3L0 = new AmdpL0Room("room3", 4, 0, 0, 4, 5, 1);
+//				AmdpL0Room r4L0 = new AmdpL0Room("room4", 3, 6, 0, 10, 8, 4);
+//				List<AmdpL0Room> L0_rooms = new ArrayList<AmdpL0Room>(Arrays.asList(r1L0, r2L0, r3L0, r4L0));
+//				
+//				//L0 State-->Starting location(GridAgent), Rooms(AmdpL0Room), Ending Location(GridLocation)
+//				AmdpL0State L0_state = new AmdpL0State(new AmdpL0Agent(x,y, "agent"), L0_rooms);
+//				
+//				AmdpL1State L1_State;
+//				try {
+//					L1_State = (AmdpL1State)lsm.mapState(L0_state);
+//					thisMap += (L1_State.agent.inRoom.charAt(4) + " ");
+//					
+//				} catch (Exception e) {
+//				    thisMap += ("  ");
+//				}
+//				try {
+//					otherMap += ((AmdpL1State)(new AmdpStateMapper()).mapState(L0_state)).agent.inRoom.charAt(4)+ " ";
+//				} catch (Exception e) {
+//				    otherMap += ("  ");
+//				}
+//			}
+//			thisMap += "\n";
+//			otherMap += "\n";
+//		}
+//		System.out.println(thisMap);
+//		System.out.println(otherMap);
+//		for (int label = 1; label <= 4; label++){
+//			int[] bounds = lsm.roomBounds(label);
+//			for(int i = 0; i < bounds.length; i++){
+//				System.out.print(bounds[i] + " ");
+//			}
+//			System.out.println("");
+//		}
+//	}
+	/**
+	 * 
+	 * @param labelOfInterest is in range 1-4
+	 * @return
+	 */
+	public int[] roomBounds(int labelOfInterest){
+		int top = 0;
+		int bottom = 10;
+		int left = 10;
+		int right = 0;
+		for(int x = 0; x <= 10; x++){
+			for(int y = 0; y <= 10; y++){
 				//Create States
 				//L0: room object (room assignment numbered top-left proceeding counterclockwise) 
-				AmdpL0Room r1L0 = new AmdpL0Room("room1", 10, 6, 5, 10, 5, 8);
-				AmdpL0Room r2L0 = new AmdpL0Room("room2", 10, 0, 6, 4, 1, 5);
-				AmdpL0Room r3L0 = new AmdpL0Room("room3", 4, 0, 0, 4, 5, 1);
-				AmdpL0Room r4L0 = new AmdpL0Room("room4", 3, 6, 0, 10, 8, 4);
-				List<AmdpL0Room> L0_rooms = new ArrayList<AmdpL0Room>(Arrays.asList(r1L0, r2L0, r3L0, r4L0));
+//				AmdpL0Room r1L0 = new AmdpL0Room("room1", 10, 6, 5, 10, 5, 8);
+//				AmdpL0Room r2L0 = new AmdpL0Room("room2", 10, 0, 6, 4, 1, 5);
+//				AmdpL0Room r3L0 = new AmdpL0Room("room3", 4, 0, 0, 4, 5, 1);
+//				AmdpL0Room r4L0 = new AmdpL0Room("room4", 3, 6, 0, 10, 8, 4);
+				List<AmdpL0Room> L0_rooms = new ArrayList<AmdpL0Room>();
 				
 				//L0 State-->Starting location(GridAgent), Rooms(AmdpL0Room), Ending Location(GridLocation)
 				AmdpL0State L0_state = new AmdpL0State(new AmdpL0Agent(x,y, "agent"), L0_rooms);
-				
-				AmdpL1State L1_State;
+				Instance test = Trajectory.instanceFromState(L0_state, attributes);
+				double[] fDistribution = {0,0,0,0};
 				try {
-					L1_State = (AmdpL1State)lsm.mapState(L0_state);
-					System.out.print(L1_State.agent.inRoom.charAt(4) + " ");
+					fDistribution[0] = classifiers.get(1).distributionForInstance(test)[0];
+					fDistribution[1] = classifiers.get(2).distributionForInstance(test)[0];
+					fDistribution[2] = classifiers.get(3).distributionForInstance(test)[0];
+					fDistribution[3] = classifiers.get(4).distributionForInstance(test)[0];
 				} catch (Exception e) {
-					System.out.print("  ");
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+				int roomNumber = argmax(fDistribution) + 1;
+				if (roomNumber == labelOfInterest) {
+					if(y < bottom){
+						bottom = y;
+					}
+					if(y > top){
+						top = y;
+					}
+					if(x < left) {
+						left = x;
+					}
+					if(x > right){
+						right = x;
+					}
 				}
 			}
-			System.out.println("");
 		}
+		return new int[]{top, left, bottom, right};
 	}
 }
