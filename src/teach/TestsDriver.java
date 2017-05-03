@@ -27,7 +27,6 @@ import burlap.mdp.core.oo.propositional.PropositionalFunction;
 import burlap.mdp.core.oo.state.OOState;
 import burlap.mdp.core.state.State;
 import burlap.statehashing.simple.SimpleHashableStateFactory;
-import teach.gridLearnedAMDP.LearnedStateMapping;
 import weka.classifiers.Classifier;
 import weka.classifiers.functions.SimpleLogistic;
 import weka.classifiers.meta.LogitBoost;
@@ -44,20 +43,20 @@ public class TestsDriver {
 		final String file_directory = System.getProperty("user.dir") + "/trajectory";
 
 		Trajectory[] traj_array = generateTrajectories(file_directory);
-		System.out.println("Execution complete. Num traj's: " + traj_array.length);
+		//System.out.println("Execution complete. Num traj's: " + traj_array.length);
 		
-		LearnedStateMapping lsm = LearnedStateMapping.buildMapping(traj_array);
+		LearningFunctions lsm = LearningFunctions.buildMapping(traj_array);
 		ArrayList<Attribute> attributes = lsm.getAttributes();
 		
 		//Defining Training Sets and Classifiers
 		Instances training1 = Trajectory.trainingForLabel(traj_array, 1, attributes);
-		Classifier class1 = LearnedStateMapping.trainClassifierFromLabelsOnly(training1, attributes);// 1 is the upper right room
+		Classifier class1 = LearningFunctions.trainClassifierFromLabelsOnly(training1, attributes);// 1 is the upper right room
 		Instances training2 = Trajectory.trainingForLabel(traj_array, 2, attributes);
-		Classifier class2 = LearnedStateMapping.trainClassifierFromLabelsOnly(training2, attributes);
+		Classifier class2 = LearningFunctions.trainClassifierFromLabelsOnly(training2, attributes);
 		Instances training3 = Trajectory.trainingForLabel(traj_array, 3, attributes);
-		Classifier class3 = LearnedStateMapping.trainClassifierFromLabelsOnly(training3, attributes);
+		Classifier class3 = LearningFunctions.trainClassifierFromLabelsOnly(training3, attributes);
 		Instances training4 = Trajectory.trainingForLabel(traj_array, 4, attributes);
-		Classifier class4 = LearnedStateMapping.trainClassifierFromLabelsOnly(training4, attributes);
+		Classifier class4 = LearningFunctions.trainClassifierFromLabelsOnly(training4, attributes);
 		
 		// Test:
 		for(int y = 10; y>=0; y--){

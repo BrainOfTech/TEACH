@@ -16,12 +16,11 @@ public class AmdpL0Room implements ObjectInstance {
     public int right;
     public int doorx;
     public int doory;
-    public int[][] learnedMap;
     
     private final static List<Object> keys = 
-    		Arrays.<Object>asList(VAR_ROOM, VAR_TOP, VAR_LEFT, VAR_BOTTOM, VAR_RIGHT, VAR_DOORX, VAR_DOORY, LEARNEDMAP);
+    		Arrays.<Object>asList(VAR_ROOM, VAR_TOP, VAR_LEFT, VAR_BOTTOM, VAR_RIGHT, VAR_DOORX, VAR_DOORY);
     
-    public AmdpL0Room(String name, int top, int left, int bottom, int right, int doorx, int doory, int[][] lm) {
+    public AmdpL0Room(String name, int top, int left, int bottom, int right, int doorx, int doory) {
         this.name = name;
         this.top = top;
         this.left = left;
@@ -29,7 +28,6 @@ public class AmdpL0Room implements ObjectInstance {
         this.right = right;
         this.doorx = doorx;
         this.doory = doory;
-        this.learnedMap = lm;
     }
     
     public String className() {
@@ -71,18 +69,15 @@ public class AmdpL0Room implements ObjectInstance {
         else if (key.equals(VAR_DOORY)){
         	return doory;
         }
-        else if (key.equals(LEARNEDMAP)){
-        	return learnedMap;
-        }
-        throw new RuntimeException("Unknown key for Cleanup Room: " + key);
+        throw new RuntimeException("Unknown key for Gridworld Room: " + key);
     }
 
     public AmdpL0Room copy() {
-        return new AmdpL0Room(name, top, left, bottom, right, doorx, doory, learnedMap);
+        return new AmdpL0Room(name, top, left, bottom, right, doorx, doory);
     }
     
     public AmdpL0Room copyWithName(String objectName) {
-        return new AmdpL0Room(objectName, top, left, bottom, right, doorx, doory, learnedMap);
+        return new AmdpL0Room(objectName, top, left, bottom, right, doorx, doory);
     }
 
     public String toString() {

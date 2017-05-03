@@ -1,10 +1,5 @@
 package teach.gridLearnedAMDP;
 
-import static gridWorldL0.AmdpL0Domain.CLASS_COORDINATE_SPACE;
-import static gridWorldL0.AmdpL0Domain.PF_AGENT_IN_COORDINATE_SPACE;
-import static gridWorldL1.AmdpL1Domain.CLASS_ROOM;
-import static gridWorldL1.AmdpL1Domain.PF_AGENT_IN_ROOM;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -25,6 +20,7 @@ import burlap.mdp.core.action.ActionType;
 import burlap.mdp.core.oo.propositional.GroundedProp;
 import burlap.mdp.core.oo.propositional.PropositionalFunction;
 import burlap.mdp.core.oo.state.OOState;
+import burlap.mdp.core.oo.state.ObjectInstance;
 import burlap.mdp.core.state.State;
 import burlap.mdp.singleagent.common.GoalBasedRF;
 import burlap.mdp.singleagent.environment.SimulatedEnvironment;
@@ -41,27 +37,26 @@ import gridAmdpFramework.GroundedTask;
 import gridAmdpFramework.NonPrimitiveTaskNode;
 import gridAmdpFramework.RootTaskNode;
 import gridAmdpFramework.TaskNode;
-import gridWorldAmdp.AmdpStateMapper;
-import gridWorldAmdp.GridWorldVisualizer;
 import gridWorldAmdp.L0TaskNode;
 import gridWorldAmdp.L1TaskNode;
 import gridWorldAmdp.AmdpDriver.l0PolicyGenerator;
 import gridWorldAmdp.AmdpDriver.l1PolicyGenerator;
 import gridWorldL0.AmdpL0Agent;
-import gridWorldL0.AmdpL0Domain;
-import gridWorldL0.AmdpL0Room;
 import gridWorldL0.AmdpL0State;
-import gridWorldL0.AmdpL0Domain.PF_InCoordinateSpace;
 import gridWorldL1.AmdpL1Domain;
 import gridWorldL1.AmdpL1Domain.PF_InRoom;
-import gridWorldL1.AmdpL1State;
+import teach.LearningFunctions;
 import teach.TestsDriver;
 import teach.Trajectory;
+import gridWorldL1.AmdpL1State;
 
-public class LearnedAMDPDriver {
+import static teach.gridLearnedAMDP.L_AmdpL0Domain.*;
+import static gridWorldL1.AmdpL1Domain.*;
+
+public class L_AmdpDriver {
     static int maxTrajectoryLength = 100;
 	static String agent_name = "agent";
-	static LearnedStateMapping lsm;
+	static LearningFunctions lsm;
 	
 	public static Data executeAmdp(Boolean experiment, int[] sl, String gl){
 	//public static void main(String[] args) {
@@ -80,8 +75,7 @@ public class LearnedAMDPDriver {
 		//Train State Mapper
 		final String file_directory = System.getProperty("user.dir") + "/trajectory";
 		Trajectory[] traj_array = TestsDriver.generateTrajectories(file_directory);//TODO: Refactor Loading
-		System.out.println("Parsing complete. Num traj's: " + traj_array.length);
-		lsm = LearnedStateMapping.buildMapping(traj_array);
+		lsm = LearningFunctions.buildMapping(traj_array);
 		
 		//Create Termination/Reward Functions via the propositional function
 		//L0
@@ -106,15 +100,11 @@ public class LearnedAMDPDriver {
 		
 		//Create States
 		//L0: room object (room assignment numbered top-left proceeding counterclockwise) 
-		int[] bounds = lsm.roomBounds(1);
-		AmdpL0Room r1L0 = new AmdpL0Room("room1", bounds[0], bounds[1], bounds[2], bounds[3], 5, 8, learnedMap);
-		bounds = lsm.roomBounds(2);
-		AmdpL0Room r2L0 = new AmdpL0Room("room2", bounds[0], bounds[1], bounds[2], bounds[3], 1, 5, learnedMap);
-		bounds = lsm.roomBounds(3);
-		AmdpL0Room r3L0 = new AmdpL0Room("room3", bounds[0], bounds[1], bounds[2], bounds[3], 5, 1, learnedMap);
-		bounds = lsm.roomBounds(4);
-		AmdpL0Room r4L0 = new AmdpL0Room("room4", bounds[0], bounds[1], bounds[2], bounds[3], 8, 4, learnedMap);
-		List<AmdpL0Room> L0_rooms = new ArrayList<AmdpL0Room>(Arrays.asList(r1L0, r2L0, r3L0, r4L0));
+		ObjectInstance r1L0 = new L_AmdpL0Room("room1", learnedMap);
+		ObjectInstance r2L0 = new L_AmdpL0Room("room2", learnedMap);
+		ObjectInstance r3L0 = new L_AmdpL0Room("room3", learnedMap);
+		ObjectInstance r4L0 = new L_AmdpL0Room("room4", learnedMap);
+		List<ObjectInstance> L0_rooms = new ArrayList<ObjectInstance>(Arrays.asList(r1L0, r2L0, r3L0, r4L0));
 	    
 //		//Create States
 //		//L0: room object (room assignment numbered top-left proceeding counterclockwise) 
@@ -129,11 +119,11 @@ public class LearnedAMDPDriver {
 		
 		//L1 State-->is dynamically set by State Mapping
 		//State L1_state = lsm.mapState(L0_state);
-		State L1_state = new AmdpStateMapper().mapState(L0_state);
+		State L1_state = new L_AmdpStateMapper().mapState(L0_state);
 		
 		//Create Domains
 		//L0
-		AmdpL0Domain gw = new AmdpL0Domain(L0rf, L0tf); 
+		L_AmdpL0Domain gw = new L_AmdpL0Domain(L0rf, L0tf); 
 		gw.setMapToFourRooms(); // four rooms layout, 11x11 grid world (essential)
 		OOSADomain domainL0 = gw.generateDomain(); // generate the grid world domain
 		
@@ -142,10 +132,10 @@ public class LearnedAMDPDriver {
 		OOSADomain domainL1 = rw.generateDomain();
 		
 		//Create Action Types
-        ActionType north = domainL0.getAction(AmdpL0Domain.ACTION_NORTH);
-        ActionType east = domainL0.getAction(AmdpL0Domain.ACTION_EAST);
-        ActionType west = domainL0.getAction(AmdpL0Domain.ACTION_WEST);
-        ActionType south = domainL0.getAction(AmdpL0Domain.ACTION_SOUTH);
+        ActionType north = domainL0.getAction(L_AmdpL0Domain.ACTION_NORTH);
+        ActionType east = domainL0.getAction(L_AmdpL0Domain.ACTION_EAST);
+        ActionType west = domainL0.getAction(L_AmdpL0Domain.ACTION_WEST);
+        ActionType south = domainL0.getAction(L_AmdpL0Domain.ACTION_SOUTH);
 
         ActionType aget_to_room = domainL1.getAction(AmdpL1Domain.ACTION_AGENT_TO_ROOM);
         
@@ -190,14 +180,14 @@ public class LearnedAMDPDriver {
 	//        System.out.println("State Sequence: \n" + e.stateSequence);
 	
 	        //Visualization
-			Visualizer v = GridWorldVisualizer.getVisualizer(gw.getMap(), goal_location, L0_state);
+			Visualizer v = L_GridWorldVisualizer.getVisualizer(gw.getMap(), goal_location, L0_state);
 			new EpisodeSequenceVisualizer(v, domainL0, Arrays.asList(e));
 			
 	        HashableStateFactory hashingFactory = new SimpleHashableStateFactory();
 	    	Planner planner = new ValueIteration(domainL0, 0.99, hashingFactory, 0.001, 100);
 	    	Policy p = planner.planFromState(L0_state);	
 	  		List<State> allStates = StateReachability.getReachableStates(L0_state, domainL0, hashingFactory);
-			ValueFunctionVisualizerGUI gui = GridWorldVisualizer.getGridWorldValueFunctionVisualization(
+			ValueFunctionVisualizerGUI gui = L_GridWorldVisualizer.getGridWorldValueFunctionVisualization(
 				allStates, 11, 11, (ValueFunction)planner, p);
 			gui.initGUI();
 			
@@ -254,7 +244,7 @@ public class LearnedAMDPDriver {
 
         public l1PolicyGenerator(OOSADomain l1In){
             l1 = l1In;
-            sm = new AmdpStateMapper();
+            sm = new L_AmdpStateMapper();
         }
         @Override
         public Policy generatePolicy(State s, GroundedTask gt) {

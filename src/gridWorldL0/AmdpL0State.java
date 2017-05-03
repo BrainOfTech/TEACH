@@ -19,13 +19,13 @@ import burlap.mdp.core.state.State;
 public class AmdpL0State implements MutableOOState {
 
 	public AmdpL0Agent agent;
-	public List<AmdpL0Room> rooms = new ArrayList<AmdpL0Room>();
+	public List<ObjectInstance> rooms = new ArrayList<ObjectInstance>();
 
-	public AmdpL0State(AmdpL0Agent agent,  List<AmdpL0Room> rooms){
+	public AmdpL0State(AmdpL0Agent agent,  List<ObjectInstance> rooms){
 		this.agent = agent;
 		this.rooms = rooms;
 	}
-	public AmdpL0State(AmdpL0Agent agent) {
+	public AmdpL0State(AmdpL0Agent agent){
 		this.agent = agent;
 	}
 	

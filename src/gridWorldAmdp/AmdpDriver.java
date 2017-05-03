@@ -109,11 +109,11 @@ public class AmdpDriver {
 
 		//Create States
 		//L0: room object (room assignment numbered top-left proceeding counterclockwise) 
-		AmdpL0Room r1L0 = new AmdpL0Room("room1", 10, 6, 5, 10, 5, 8);
-		AmdpL0Room r2L0 = new AmdpL0Room("room2", 10, 0, 6, 4, 1, 5);
-		AmdpL0Room r3L0 = new AmdpL0Room("room3", 4, 0, 0, 4, 5, 1);
-		AmdpL0Room r4L0 = new AmdpL0Room("room4", 3, 6, 0, 10, 8, 4);
-		List<AmdpL0Room> L0_rooms = new ArrayList<AmdpL0Room>(Arrays.asList(r1L0, r2L0, r3L0, r4L0));
+		ObjectInstance r1L0 = new AmdpL0Room("room1", 10, 6, 5, 10, 5, 8);
+		ObjectInstance r2L0 = new AmdpL0Room("room2", 10, 0, 6, 4, 1, 5);
+		ObjectInstance r3L0 = new AmdpL0Room("room3", 4, 0, 0, 4, 5, 1);
+		ObjectInstance r4L0 = new AmdpL0Room("room4", 3, 6, 0, 10, 8, 4);
+		List<ObjectInstance> L0_rooms = new ArrayList<ObjectInstance>(Arrays.asList(r1L0, r2L0, r3L0, r4L0));
 		
 		//L0 State-->Starting location(GridAgent), Rooms(AmdpL0Room), Ending Location(GridLocation)
 		AmdpL0State L0_state = new AmdpL0State(new AmdpL0Agent(start_location[0],start_location[1], agent_name), L0_rooms);

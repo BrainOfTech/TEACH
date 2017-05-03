@@ -1,4 +1,4 @@
-package gridWorldL0;
+package teach.gridLearnedAMDP;
 
 import burlap.behavior.policy.Policy;
 import burlap.behavior.singleagent.auxiliary.valuefunctionvis.ValueFunctionVisualizerGUI;
@@ -21,6 +21,8 @@ import burlap.mdp.singleagent.common.UniformCostRF;
 import burlap.mdp.singleagent.model.FactoredModel;
 import burlap.mdp.singleagent.model.RewardFunction;
 import burlap.mdp.singleagent.oo.OOSADomain;
+import gridWorldL0.AmdpL0Model;
+import gridWorldL0.AmdpL0State;
 import gridWorldL1.AmdpL1State;
 import teach.LearningFunctions;
 
@@ -30,16 +32,11 @@ import java.util.Random;
 
 //See GridWorldDomain for documentation 
 
-public class AmdpL0Domain implements DomainGenerator {
+public class L_AmdpL0Domain implements DomainGenerator {
     public static final String VAR_ROOM = "name";
-    public static final String VAR_TOP = "top";
-    public static final String VAR_LEFT = "left";
-    public static final String VAR_BOTTOM = "bottom";
-    public static final String VAR_RIGHT = "right";
-    public static final String VAR_DOORX = "doorx";
-    public static final String VAR_DOORY = "doory";
 	public static final String VAR_X = "x";
 	public static final String VAR_Y = "y";
+	public static final String LEARNED_MAP = "learnedMap";
 	
 	public static final String CLASS_AGENT = "agent";
 	public static final String CLASS_COORDINATE_SPACE = "rooms";
@@ -62,7 +59,7 @@ public class AmdpL0Domain implements DomainGenerator {
 	protected RewardFunction rf;
 	protected TerminalFunction tf;
 	
-	public AmdpL0Domain(RewardFunction rf, TerminalFunction tf){
+	public L_AmdpL0Domain(RewardFunction rf, TerminalFunction tf){
         this.rf = rf;
         this.tf = tf;
 	}
@@ -84,7 +81,7 @@ public class AmdpL0Domain implements DomainGenerator {
 		OOSADomain domain = new OOSADomain();
 
 		domain.addStateClass(CLASS_AGENT, GridAgent.class);
-		domain.addStateClass(CLASS_COORDINATE_SPACE, AmdpL0Room.class);
+		domain.addStateClass(CLASS_COORDINATE_SPACE, L_AmdpL0Room.class);
 		
 		OODomain.Helper.addPfsToDomain(domain, this.generatePfs());
 		
@@ -109,56 +106,59 @@ public class AmdpL0Domain implements DomainGenerator {
 		domain.setModel(model);
 		return domain;
 	}
+    
+    //LEARNED FUNCTIONS///////////////////////////////////////////////////////////////
+    public static ObjectInstance currentRoom(State s, int x, int y, String oclass){
+    	AmdpL0State working_state = (AmdpL0State)s;
+        List<ObjectInstance> room_objects = working_state.objectsOfClass(oclass);
+    	
+        for(ObjectInstance o : room_objects){
+            if(learnedRegionContainsPoint(o, x, y)){
+                return o;
+            }
+        }
+    	return null;
+    }
 	
-//	PropositionalFunction will negotiate all interactions between
-//	Agent and Room state objects
     public static class PF_InCoordinateSpace extends PropositionalFunction {
         public PF_InCoordinateSpace(String name, String [] params){
             super(name, params);
         }
+        
         @Override
         public boolean isTrue(OOState s, String... params) {
         	//params = CLASS_COORDINATE_RECTANGLE instance e.g. "room1"
         	AmdpL0State working_state = (AmdpL0State)s; //cast generic to L0State
         	int x = working_state.agent.x;
         	int y = working_state.agent.y;
-
-            ObjectInstance room_object = working_state.object(params[0]);
-            return regionContainsPoint(room_object, x, y);
+        	
+        	ObjectInstance o = working_state.object(params[0]);
+        	
+        	return learnedRegionContainsPoint(o, x, y);
         }     
     }
     
-    public static ObjectInstance currentRoom(State s, int x, int y, String oclass){
-    	AmdpL0State working_state = (AmdpL0State)s;
-        List<ObjectInstance> room_objects = working_state.objectsOfClass(oclass);
-    	
-        for(ObjectInstance o : room_objects){
-            if(regionContainsPoint(o, x, y)){
-                return o;
-            }
-        }
-    	return null;
+    public static boolean learnedRegionContainsPoint(ObjectInstance o, int x, int y){
+    	int [][] lm = (int[][]) o.get(LEARNED_MAP);
+    	int key = -1;
+    	if (o.name().equals("room1")){
+    		key = 1;
+    	}
+    	else if (o.name().equals("room2")){
+    		key = 2;
+    	} 
+    	else if (o.name().equals("room3")){
+    		key = 3;
+    	} 
+    	else if (o.name().equals("room4")){
+    		key = 4;
+    	} 
+    	else {
+    		throw new RuntimeException("Mismatch for Learned Region");
+    	}
+        return key == lm[x][y];
     }
-    
-    public static boolean regionContainsPoint(ObjectInstance o, int x, int y){
-        int top = (Integer)o.get(VAR_TOP);
-        int left = (Integer)o.get(VAR_LEFT);
-        int bottom = (Integer)o.get(VAR_BOTTOM);
-        int right = (Integer)o.get(VAR_RIGHT);
-        int doorx = (Integer)o.get(VAR_DOORX);
-        int doory = (Integer)o.get(VAR_DOORY);
-        
-        //in designated room doorway
-        if(x == doorx && y == doory){
-        	return true;
-        }
-        //in room
-        if(y >= bottom && y <= top && x >= left && x <= right){
-            return true;
-        }
-        return false;
-    }
-    
+
     //GRIDWORLD FUNCTIONS///////////////////////////////////////////////////////////////
 	public class WallToPF extends PropositionalFunction{
 
@@ -167,7 +167,7 @@ public class AmdpL0Domain implements DomainGenerator {
 		
 		public WallToPF(String name, String[] parameterClasses, int direction) {
 			super(name, parameterClasses);
-			int [] dcomps = AmdpL0Domain.movementDirectionFromIndex(direction);
+			int [] dcomps = L_AmdpL0Domain.movementDirectionFromIndex(direction);
 			xdelta = dcomps[0];
 			ydelta = dcomps[1];
 		}
@@ -183,9 +183,9 @@ public class AmdpL0Domain implements DomainGenerator {
 			int cx = ax + xdelta;
 			int cy = ay + ydelta;
 			
-			if(cx < 0 || cx >= AmdpL0Domain.this.width || cy < 0 || cy >= AmdpL0Domain.this.height || AmdpL0Domain.this.map[cx][cy] == 1 || 
-					(xdelta > 0 && (AmdpL0Domain.this.map[ax][ay] == 3 || AmdpL0Domain.this.map[ax][ay] == 4)) || (xdelta < 0 && (AmdpL0Domain.this.map[cx][cy] == 3 || AmdpL0Domain.this.map[cx][cy] == 4)) ||
-					(ydelta > 0 && (AmdpL0Domain.this.map[ax][ay] == 2 || AmdpL0Domain.this.map[ax][ay] == 4)) || (ydelta < 0 && (AmdpL0Domain.this.map[cx][cy] == 2 || AmdpL0Domain.this.map[cx][cy] == 4)) ){
+			if(cx < 0 || cx >= L_AmdpL0Domain.this.width || cy < 0 || cy >= L_AmdpL0Domain.this.height || L_AmdpL0Domain.this.map[cx][cy] == 1 || 
+					(xdelta > 0 && (L_AmdpL0Domain.this.map[ax][ay] == 3 || L_AmdpL0Domain.this.map[ax][ay] == 4)) || (xdelta < 0 && (L_AmdpL0Domain.this.map[cx][cy] == 3 || L_AmdpL0Domain.this.map[cx][cy] == 4)) ||
+					(ydelta > 0 && (L_AmdpL0Domain.this.map[ax][ay] == 2 || L_AmdpL0Domain.this.map[ax][ay] == 4)) || (ydelta < 0 && (L_AmdpL0Domain.this.map[cx][cy] == 2 || L_AmdpL0Domain.this.map[cx][cy] == 4)) ){
 				return true;
 			}
 			
