@@ -33,12 +33,15 @@ import weka.core.Instances;
  * It applies abstract labels to the state based on the learned classifications.
  * The questionably named "ObjectInstance" "agent" stores the location information.
  * 
+ * This Class implements a Singleton pattern to prevent redundant re-training. This is easy to change; simply edit {@link LearningFunctions#buildMapping(Trajectory[])} as needed.
+ * 
  * @author (S)am
  *
  */
 //TODO: Add relearning based on additional trajectories.
 //TODO: Add relearning based on unsupervised exploration.
 public class LearningFunctions{
+	static LearningFunctions soleInstance = null;
 	
 	ArrayList<Attribute> attributes;
 	Trajectory[] inputData;
@@ -74,9 +77,15 @@ public class LearningFunctions{
 	 * @return a new LearnedStateMapping, properly trained.
 	 */
 	public static LearningFunctions buildMapping(Trajectory[] labeledTrajectories){
-		LearningFunctions lsm = new LearningFunctions(labeledTrajectories);
-		lsm.train();
-		return lsm;//TODO: train.
+		LearningFunctions lsm;
+		if(soleInstance==null){
+			lsm = new LearningFunctions(labeledTrajectories);
+			lsm.train();
+		} else {
+			lsm = soleInstance;
+		}
+		
+		return lsm;
 	}
 	
 	/**
