@@ -1,32 +1,32 @@
 !!burlap.behavior.singleagent.Episode
 actionSequence:
-- &id001 !!burlap.mdp.core.action.SimpleAction {name: north}
+- !!burlap.mdp.core.action.SimpleAction {name: north}
+- &id001 !!burlap.mdp.core.action.SimpleAction {name: east}
 - *id001
 - *id001
-- &id002 !!burlap.mdp.core.action.SimpleAction {name: west}
-- *id002
+- *id001
 - *id001
 rewardSequence: [-1.0, -1.0, -1.0, -1.0, -1.0, -1.0]
 stateSequence:
 - !!burlap.domain.singleagent.gridworld.state.GridWorldState
-  agent: {name: agent, x: 10, y: 0}
-  locations: &id003
+  agent: {name: agent, x: 0, y: 0}
+  locations: &id002
   - {name: loc0, type: 0, x: 10, y: 10}
 - !!burlap.domain.singleagent.gridworld.state.GridWorldState
-  agent: {name: agent, x: 10, y: 1}
-  locations: *id003
+  agent: {name: agent, x: 0, y: 1}
+  locations: *id002
 - !!burlap.domain.singleagent.gridworld.state.GridWorldState
-  agent: {name: agent, x: 10, y: 2}
-  locations: *id003
+  agent: {name: agent, x: 1, y: 1}
+  locations: *id002
 - !!burlap.domain.singleagent.gridworld.state.GridWorldState
-  agent: {name: agent, x: 10, y: 3}
-  locations: *id003
+  agent: {name: agent, x: 2, y: 1}
+  locations: *id002
 - !!burlap.domain.singleagent.gridworld.state.GridWorldState
-  agent: {name: agent, x: 9, y: 3}
-  locations: *id003
+  agent: {name: agent, x: 3, y: 1}
+  locations: *id002
 - !!burlap.domain.singleagent.gridworld.state.GridWorldState
-  agent: {name: agent, x: 8, y: 3}
-  locations: *id003
+  agent: {name: agent, x: 4, y: 1}
+  locations: *id002
 - !!burlap.domain.singleagent.gridworld.state.GridWorldState
-  agent: {name: agent, x: 8, y: 4}
-  locations: *id003
+  agent: {name: agent, x: 5, y: 1}
+  locations: *id002

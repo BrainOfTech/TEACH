@@ -22,7 +22,7 @@ public class HelloGridWorld {
 		
 		
 		// setup initial state
-		MutableState s = new GridWorldState(new GridAgent(0, 10), new GridLocation(10, 10, "loc0"));
+		MutableState s = new GridWorldState(new GridAgent(10, 0), new GridLocation(10, 10, "loc0"));
 
 		// create visualizer and explorer
 		Visualizer v = GridWorldVisualizer.getVisualizer(gw.getMap());

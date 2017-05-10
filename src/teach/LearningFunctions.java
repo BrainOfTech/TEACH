@@ -43,8 +43,8 @@ import weka.core.Instances;
 // TODO: Add relearning based on additional trajectories.
 // TODO: Add relearning based on unsupervised exploration.
 public class LearningFunctions {
-	static LearningFunctions soleInstance = null;
-	static int[][] learnedMap = null;
+//	static LearningFunctions soleInstance = null;
+//	static int[][] learnedMap = null;
 
 	ArrayList<Attribute> attributes;
 	Trajectory[] inputData;
@@ -85,12 +85,12 @@ public class LearningFunctions {
 	 */
 	public static LearningFunctions buildMapping(Trajectory[] labeledTrajectories) {
 		LearningFunctions lsm;
-		if (soleInstance == null) {
+//		if (soleInstance == null) {
 			lsm = new LearningFunctions(labeledTrajectories);
 			lsm.train();
-		} else {
-			lsm = soleInstance;
-		}
+//		} else {
+//			lsm = soleInstance;
+//		}
 
 		return lsm;
 	}
@@ -176,7 +176,7 @@ public class LearningFunctions {
 	}
 
 	public int[][] makeMap(State s, int width, int height) {
-		if (learnedMap==null) {
+//		if (learnedMap!=null) {
 
 			AmdpL0State a0s = (AmdpL0State) s;
 			int[][] map = new int[width][height];
@@ -207,10 +207,11 @@ public class LearningFunctions {
 			// System.out.println();
 			// }
 			
-			learnedMap = map;
+//			learnedMap = map;
 			return map;
-		} else {
-			return learnedMap;
-		}
+//		} 
+//		else {
+//			return learnedMap;
+//		}
 	}
 }

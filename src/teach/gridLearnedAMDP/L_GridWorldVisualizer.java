@@ -143,10 +143,16 @@ public class L_GridWorldVisualizer {
 			        //in room
 			        if(lm[x][y] == key){
 			        	g2.fill(new Rectangle2D.Float(rx, ry, width, height));
+			        	
 			        }
+			        String classification = String.valueOf(lm[x][y]);
+					Font myFont = new Font("Serif", Font.BOLD, 18);
+					g2.setColor(Color.black);
+					g2.setFont(myFont);
+			        g2.drawString(classification, rx+30, ry+20);
 					
 					//draw the walls; make them black
-					g2.setColor(Color.black);
+
 					boolean drawNorthWall = false;
 					boolean drawEastWall = false;
 					

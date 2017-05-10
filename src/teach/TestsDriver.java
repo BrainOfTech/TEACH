@@ -78,7 +78,7 @@ public class TestsDriver {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				System.out.print(argmax(fDistribution) + 1 + " ");
+				//System.out.print(argmax(fDistribution) + 1 + " ");
 //				if(fDistribution[0]>.5){
 //					System.out.print(1 + " ");
 //				} else {
